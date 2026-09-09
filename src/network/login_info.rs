@@ -7,6 +7,9 @@ use colored::Colorize;
 use derive_new::new;
 
 #[derive(Clone, Serialize, Deserialize, new)]
+#[derive(PartialEq)]
+#[derive(Hash)]
+#[derive(Eq)]
 pub struct LoginInfo {
     pub email: String,
     pub password: String,

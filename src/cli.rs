@@ -1,3 +1,4 @@
+use crate::network::SearchResultsMenu;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
@@ -121,7 +122,7 @@ impl Cli {
         let results = server_list.search(server_list.get_default()?, query.clone())?;
 
         let mut app = App::default();
-        let mut search_menu = SearchMenu::new(query, SearchResults::new(results, server_list_lock.clone()), server_list_lock.clone());
+        let mut search_menu = SearchMenu::new(query, SearchResultsMenu::new(SearchResults::new(results, server_list_lock.clone())), server_list_lock.clone());
 
         app.run(&mut search_menu)?;
         Ok(())

@@ -12,6 +12,9 @@ use crate::network::LoginInfo;
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(from="ServerSerializer")]
 #[serde(into="ServerSerializer")]
+#[derive(PartialEq)]
+#[derive(Eq)]
+#[derive(Hash)]
 pub struct Server {
     #[serde(with = "url_serde")]
     url: Url, 

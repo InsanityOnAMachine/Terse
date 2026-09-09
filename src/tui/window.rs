@@ -14,6 +14,17 @@ pub trait Window {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {Ok(())}
     fn update(&mut self) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer);
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: Vec<String>) {
+        self.render(area, buf);
+        let key_bindings = labels.join("-");
+        Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
+    }
+    fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
+        self.render(area, buf);
+        buf.set_style(area, Style::new().gray());
+
+        Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
+    }
 }
 
 pub trait FramedWindow: Window {
