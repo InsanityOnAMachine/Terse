@@ -19,7 +19,7 @@ pub enum SearchMenuMode {
 }
 
 pub struct SearchMenu {
-    results: SearchResultsMenu,
+    results: Result<SearchResultsMenu, Error>,
     search_bar: SearchBar,
     mode: SearchMenuMode,
     server_list: Arc<RwLock<ServerList>>
@@ -27,8 +27,19 @@ pub struct SearchMenu {
 
 // TODO: it should *create* a search menu and prompt *it* to search...
 impl SearchMenu {
-    pub fn new(query: String, results: SearchResultsMenu, server_list: Arc<RwLock<ServerList>>) -> Self {
-        Self {results, search_bar: SearchBar::new(query), mode: SearchMenuMode::Results, server_list}
+    pub fn new(query: String, server_list: Arc<RwLock<ServerList>>) -> Self {
+        let mut menu = Self {results: Err(Error::msg("WAITING AND THIS SHOULD BE A SPECIAL TYPE...")), search_bar: SearchBar::new(query.clone()), mode: SearchMenuMode::Search, server_list};
+        menu.process_search(query);
+        menu
+    }
+
+    fn process_search(&mut self, query: String) {
+        let server_list = self.server_list.read();
+        self.results = || -> Result<SearchResultsMenu, Error> {
+            let results = server_list.search(server_list.get_default()?, query)?;
+            return Ok(SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone())))
+        }();
+        if self.results.is_ok() {self.mode = SearchMenuMode::Results}
     }
 }
 
@@ -41,7 +52,7 @@ impl Window for SearchMenu {
                     self.mode = SearchMenuMode::Search;
                     return Ok(())
                 }
-                self.results.handle_key_event(key)?
+                self.results.handle_key_event(key)?;
             }
             SearchMenuMode::Search => {
                 if let KeyCode::Char('j') = key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -51,9 +62,11 @@ impl Window for SearchMenu {
 
                 if let Some(text) = self.search_bar.handle_key_event(key)? {
                     let server_list = self.server_list.read();
-                    let results = server_list.search(server_list.get_default()?, text)?;
-                    self.results = SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone()));
-                    self.mode = SearchMenuMode::Results
+                    self.results = || -> Result<SearchResultsMenu, Error> {
+                        let results = server_list.search(server_list.get_default()?, text)?;
+                        return Ok(SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone())))
+                    }();
+                    if self.results.is_ok() {self.mode = SearchMenuMode::Results}
                 }
             }
         }

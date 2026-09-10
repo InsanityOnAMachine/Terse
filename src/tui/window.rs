@@ -1,5 +1,4 @@
 use ratatui::widgets::Padding;
-use ratatui::text::Line;
 use ratatui::layout::{Offset, Size};
 use ratatui::text::Text;
 use crate::tui;
@@ -85,10 +84,14 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
         match self {
             Ok(x) => x.render(area, buf),
             Err(e) => {
-                let block = tui::get_default_block();
-                let inner = block.inner(area);
-                block.render(area, buf);
-                Line::from(format!("(!) There was an error: {} (!)", e)).centered().red().render(inner, buf)
+                // https://www.reddit.com/r/learnrust/comments/16ibtin/centring_text_in_ratatui/
+                Paragraph::new(format!("(!) There was an error: {} (!)", e)).red().centered()
+                .block(tui::get_default_block().padding(Padding::new(
+                    0, // left
+                    0, // right
+                    area.height / 2, // top
+                    0, // bottom
+                ))).render(area, buf);
             }
         }
     }
