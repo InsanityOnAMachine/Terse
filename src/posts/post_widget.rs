@@ -50,7 +50,7 @@ impl Window for PostWidget {
         StatefulWidget::render(
             Scrollbar::new(ScrollbarOrientation::VerticalRight).thumb_symbol("ℋ").thumb_style(Style::new().red().on_red())
             .track_symbol(Some("│")).track_style(Style::new().light_red())
-            // https://en.wikipedia.org/wiki/Box-drawing_characters
+            // https://en.wikipedia.org/wiki/Box_Drawing
             .end_symbol(Some("┬")).begin_symbol(Some("┴")),
             area.offset(Offset::new((area.width - 1).into(), 1)).resize(Size::new(1, inner.height)),
             buf,

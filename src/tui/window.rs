@@ -5,7 +5,7 @@ use crate::tui;
 
 use ratatui::prelude::{Widget, Buffer, Rect};
 use ratatui::widgets::{Paragraph};
-use ratatui::style::{Style, Stylize};
+use ratatui::style::{Color, Style, Stylize};
 use crossterm::event::KeyEvent;
 
 use anyhow::Error;
@@ -23,7 +23,21 @@ pub trait Window {
     }
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
         self.render(area, buf);
-        buf.set_style(area, Style::new().gray());
+
+        // We yank the code for Buffer::set_style() because we only want to set the bg style if it is not empty
+        // https://docs.rs/ratatui-core/0.1.2/src/ratatui_core/buffer/buffer.rs.html#405
+
+        let area = buf.area.intersection(area);
+        for y in area.top()..area.bottom() {
+            for x in area.left()..area.right() {
+                let cell = &mut buf[(x, y)];
+
+                cell.set_fg(Color::Gray);
+                if cell.style().bg.is_some() && cell.style().bg != Some(Color::Reset) {
+                    cell.set_bg(Color::Gray);
+                }
+            }
+        }
 
         Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
     }

@@ -37,6 +37,7 @@ impl SearchMenu {
         let server_list = self.server_list.read();
         self.results = || -> Result<SearchResultsMenu, Error> {
             let results = server_list.search(server_list.get_default()?, query)?;
+            if results.is_empty() {return Err(Error::msg("No results matching that query!"))}
             return Ok(SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone())))
         }();
         if self.results.is_ok() {self.mode = SearchMenuMode::Results}
@@ -61,12 +62,7 @@ impl Window for SearchMenu {
                 }
 
                 if let Some(text) = self.search_bar.handle_key_event(key)? {
-                    let server_list = self.server_list.read();
-                    self.results = || -> Result<SearchResultsMenu, Error> {
-                        let results = server_list.search(server_list.get_default()?, text)?;
-                        return Ok(SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone())))
-                    }();
-                    if self.results.is_ok() {self.mode = SearchMenuMode::Results}
+                    self.process_search(text);
                 }
             }
         }
