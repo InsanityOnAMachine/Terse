@@ -42,18 +42,18 @@ impl Window for PostWidget {
             ])
             .split(area);
 
+        self.scroll_state = ScrollbarState::new(self.height.saturating_sub(area.height as usize)+1).position(std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(area.height as usize)));
+
         // TODO: eliminate this clone() by any means necessary.
         Paragraph::new(self.post.content.clone())
-        .scroll((std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(area.height as usize)) as u16, 0))
+        .scroll((self.scroll_state.get_position() as u16, 0))
         .render(layout[0], buf);
 
         StatefulWidget::render(
             Scrollbar::new(ScrollbarOrientation::VerticalRight),
             layout[1],
             buf,
-            &mut ScrollbarState::new(
-                self.height.saturating_sub(area.height as usize)
-            ).position(std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(area.height as usize)))
+            &mut self.scroll_state
         );
     }
 }
