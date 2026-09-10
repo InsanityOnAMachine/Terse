@@ -1,6 +1,6 @@
-use ratatui::{layout::{Constraint, Layout, Rect}, buffer::Buffer, widgets::{StatefulWidget, Widget, Scrollbar, ScrollbarOrientation, ScrollbarState, Paragraph}};
+use ratatui::{buffer::Buffer, layout::{Offset, Rect, Size}, style::Style, widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, StatefulWidget, Widget}};
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::tui::{Window, FramedWindow, Label};
+use crate::tui::{self, Label, Window};
 use super::Post;
 
 use anyhow::Error;
@@ -36,29 +36,28 @@ impl Window for PostWidget {
     // TODO: Scrollbar actually to scale!
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
 
-        let layout = Layout::horizontal(vec![
-                Constraint::Fill(1),
-                Constraint::Length(1),
-            ])
-            .split(area);
+        let block = tui::get_default_block();
+        let inner = block.inner(area);
+        block.render(area, buf);
 
-        self.scroll_state = ScrollbarState::new(self.height.saturating_sub(area.height as usize)+1).position(std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(area.height as usize)));
+        self.scroll_state = ScrollbarState::new(self.height.saturating_sub(inner.height as usize)+1).position(std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(inner.height as usize)));
 
         // TODO: eliminate this clone() by any means necessary.
         Paragraph::new(self.post.content.clone())
         .scroll((self.scroll_state.get_position() as u16, 0))
-        .render(layout[0], buf);
+        .render(inner, buf);
 
         StatefulWidget::render(
-            Scrollbar::new(ScrollbarOrientation::VerticalRight),
-            layout[1],
+            Scrollbar::new(ScrollbarOrientation::VerticalRight).thumb_symbol("ℋ").thumb_style(Style::new().red().on_red())
+            .track_symbol(Some("│")).track_style(Style::new().light_red())
+            // https://en.wikipedia.org/wiki/Box-drawing_characters
+            .end_symbol(Some("┬")).begin_symbol(Some("┴")),
+            area.offset(Offset::new((area.width - 1).into(), 1)).resize(Size::new(1, inner.height)),
             buf,
             &mut self.scroll_state
         );
     }
-}
 
-impl FramedWindow for PostWidget {
     fn get_labels() -> Vec<String> {
         return vec![
             Label::new("j", "down"),

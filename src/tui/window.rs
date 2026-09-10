@@ -1,11 +1,12 @@
+use ratatui::widgets::Padding;
 use ratatui::text::Line;
 use ratatui::layout::{Offset, Size};
 use ratatui::text::Text;
 use crate::tui;
 
 use ratatui::prelude::{Widget, Buffer, Rect};
-use ratatui::widgets::Block;
-use ratatui::style::{Modifier, Style, Stylize};
+use ratatui::widgets::{Paragraph};
+use ratatui::style::{Style, Stylize};
 use crossterm::event::KeyEvent;
 
 use anyhow::Error;
@@ -15,10 +16,11 @@ pub trait Window {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
     fn update(&mut self) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer);
-    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: Vec<String>) {
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         self.render(area, buf);
+        labels.append(&mut Self::get_labels());
         let key_bindings = labels.join("-");
-        Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
+        Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: (area.height - 1).into()}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
     }
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
         self.render(area, buf);
@@ -26,28 +28,6 @@ pub trait Window {
 
         Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
     }
-}
-
-pub trait FramedWindow: Window {
-    fn render_selected(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
-        labels.append(&mut Self::get_labels());
-        self.render_in_block(area, buf, tui::get_default_block()
-            .title_bottom(labels.join("-")));
-    }
-
-    fn render_unselected(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
-        self.render_in_block(area, buf, tui::get_default_block());
-        buf.set_style(area, Style::new().gray());
-
-        Text::from(message.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size {width: message.as_ref().len() as u16, height: 1}), buf)
-    }
-
-    fn render_in_block(&mut self, area: Rect, buf: &mut Buffer, block: Block) {
-        let inner = block.inner(area);
-        block.render(area, buf);
-        self.render(inner, buf);
-    }
-
     fn get_labels() -> Vec<String> {vec![]}
 }
 
@@ -56,7 +36,16 @@ impl<T> Window for Option<T> where T: Window {
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
             Some(x) => x.render(area, buf),
-            _ => {}
+            _ => {
+                // https://www.reddit.com/r/learnrust/comments/16ibtin/centring_text_in_ratatui/
+                Paragraph::new("Nothing here!").gray().centered()
+                .block(tui::get_default_block().padding(Padding::new(
+                    0, // left
+                    0, // right
+                    area.height / 2, // top
+                    0, // bottom
+                ))).render(area, buf)
+            }
         }
     }
 
@@ -73,20 +62,18 @@ impl<T> Window for Option<T> where T: Window {
             _ => Ok(())
         }
     }
-}
 
-impl<T> FramedWindow for Option<T> where T: FramedWindow {
-    fn render_selected(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         match self {
-            Some(window) => {window.render_selected(area, buf, labels)},
-            None => {tui::get_default_block().render(area, buf)}
+            Some(window) => {window.render_with_help(area, buf, labels)},
+            None => {self.render(area, buf)}
         }
     }
 
-    fn render_unselected(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
+    fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
         match self {
-            Some(window) => {window.render_unselected(area, buf, &message)},
-            None => {tui::get_default_block().border_style(Style::new().gray()).render(area, buf)}
+            Some(window) => {window.render_greyed_out(area, buf, &message)},
+            None => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
         }
     }
 }
@@ -97,7 +84,12 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
             Ok(x) => x.render(area, buf),
-            Err(e) => {Line::from(format!("(!) There was an error: {} (!)", e)).centered().red().render(area, buf)}
+            Err(e) => {
+                let block = tui::get_default_block();
+                let inner = block.inner(area);
+                block.render(area, buf);
+                Line::from(format!("(!) There was an error: {} (!)", e)).centered().red().render(inner, buf)
+            }
         }
     }
 
@@ -114,6 +106,18 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
             _ => Ok(())
         }
     }
-}
 
-impl<T> FramedWindow for Result<T, anyhow::Error> where T: Window {}
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+        match self {
+            Ok(window) => {window.render_with_help(area, buf, labels)},
+            Err(_) => {self.render(area, buf)}
+        }
+    }
+
+    fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
+        match self {
+            Ok(window) => {window.render_greyed_out(area, buf, &message)},
+            Err(_) => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
+        }
+    }
+}

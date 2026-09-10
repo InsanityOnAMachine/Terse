@@ -1,8 +1,9 @@
+use ratatui::prelude::Widget;
 use std::collections::HashMap;
 use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
-use crate::tui::{FramedWindow, Window, Label};
+use crate::tui::{self, Label, Window};
 use crate::network::{Server, ServerList};
 use crate::posts::{Post, PostWidget};
 
@@ -142,12 +143,12 @@ impl Window for SearchResultsMenu {
 
         match self.mode {
             SearchResultsMenuMode::Results => {
-                self.search_results.render_selected(left, buf, &mut vec![]);
-                self.post_widget.render_unselected(right, buf, "");
+                self.search_results.render_with_help(left, buf, &mut vec![]);
+                self.post_widget.render_greyed_out(right, buf, "");
             }
             SearchResultsMenuMode::Post => {
-                self.search_results.render_unselected(left, buf, "b");
-                self.post_widget.render_selected(right, buf, &mut vec![]);
+                self.search_results.render_greyed_out(left, buf, "b");
+                self.post_widget.render_with_help(right, buf, &mut vec![]);
             }
         }
     }
@@ -172,20 +173,22 @@ impl Window for SearchResults {
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        let block = tui::get_default_block();
+        let inner = block.inner(area);
+        block.render(area, buf);
+
         // The actual results part
         StatefulWidget::render(
             List::new(self.links.iter().map(|x| &x.header))
                 // This can also be a style.
                 .highlight_style(Modifier::REVERSED)
                 .scroll_padding(3),
-            area,
+            inner,
             buf,
             &mut self.list_state,
         );
     }
-}
-
-impl FramedWindow for SearchResults {
+    
     fn get_labels() -> Vec<String> {
         return vec![
             Label::new("j", "down"),

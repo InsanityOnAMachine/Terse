@@ -3,7 +3,7 @@ use anyhow::Error;
 use std::sync::Arc;
 use parking_lot::RwLock;
 use ratatui::layout::{ Layout, Direction, Constraint };
-use crate::{network::ServerList, tui::{FramedWindow, Label, Window}};
+use crate::{network::ServerList, tui::{Label, Window}};
 use super::{SearchResults, SearchBar};
 
 use ratatui::{
@@ -71,10 +71,10 @@ impl Window for SearchMenu {
             .areas(area);
 
         if let SearchMenuMode::Results = &mut self.mode {
-            (&mut self.search_bar).render_unselected(top, buf, "ctrl+k");
+            (&mut self.search_bar).render_greyed_out(top, buf, "ctrl+k");
             (&mut self.results).render(bottom, buf);
         } else {
-            (&mut self.search_bar).render_selected(top, buf, &mut vec![Label::new("enter", "search")]);
+            (&mut self.search_bar).render_with_help(top, buf, &mut vec![Label::new("enter", "search")]);
             (&mut self.results).render_greyed_out(bottom, buf, "ctrl+j");
         }
         return

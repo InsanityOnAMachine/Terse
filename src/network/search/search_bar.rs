@@ -1,6 +1,6 @@
 use anyhow::Error;
 use ratatui::text::Line;
-use crate::tui::{FramedWindow, Window};
+use crate::tui::{self, Window};
 
 use ratatui::{
     buffer::Buffer,
@@ -39,8 +39,10 @@ impl Window for SearchBar {
 	}
 
 	fn render(&mut self, area: Rect, buf: &mut Buffer) {
-		Line::from(self.text.as_str()).render(area, buf);
+		let block = tui::get_default_block();
+		let inner = block.inner(area);
+		block.render(area, buf);
+
+		Line::from(self.text.as_str()).render(inner, buf);
 	}
 }
-
-impl FramedWindow for SearchBar {}
