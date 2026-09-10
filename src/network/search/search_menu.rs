@@ -41,30 +41,22 @@ impl Window for SearchMenu {
                     self.mode = SearchMenuMode::Search;
                     return Ok(())
                 }
+                self.results.handle_key_event(key)?
             }
             SearchMenuMode::Search => {
                 if let KeyCode::Char('j') = key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
                     self.mode = SearchMenuMode::Results;
                     return Ok(())
                 }
+
+                if let Some(text) = self.search_bar.handle_key_event(key)? {
+                    let server_list = self.server_list.read();
+                    let results = server_list.search(server_list.get_default()?, text)?;
+                    self.results = SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone()));
+                    self.mode = SearchMenuMode::Results
+                }
             }
         }
-
-        match &mut self.mode {
-            SearchMenuMode::Search => {
-                match key.code {
-                    KeyCode::Enter => {
-                        let server_list = self.server_list.read();
-                        let results = server_list.search(server_list.get_default()?, self.search_bar.text.clone())?;
-                        self.results = SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone()));
-                        self.mode = SearchMenuMode::Results
-                    }
-                    _ => {}
-                }
-                self.search_bar.handle_key_event(key)?;
-            },
-            SearchMenuMode::Results => {self.results.handle_key_event(key)?}
-        };
 
         Ok(())
     }

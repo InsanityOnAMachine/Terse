@@ -11,7 +11,8 @@ use crossterm::event::KeyEvent;
 use anyhow::Error;
 
 pub trait Window {
-    fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {Ok(())}
+    type Action = ();
+    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
     fn update(&mut self) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer);
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: Vec<String>) {
@@ -51,6 +52,7 @@ pub trait FramedWindow: Window {
 }
 
 impl<T> Window for Option<T> where T: Window {
+    type Action = Option<T::Action>;
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
             Some(x) => x.render(area, buf),
@@ -58,10 +60,10 @@ impl<T> Window for Option<T> where T: Window {
         }
     }
 
-    fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
+    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error> {
         match self {
-            Some(x) => x.handle_key_event(key),
-            _ => Ok(())
+            Some(x) => Some(x.handle_key_event(key)).transpose(),
+            _ => Ok(None)
         }
     }
 
@@ -90,6 +92,8 @@ impl<T> FramedWindow for Option<T> where T: FramedWindow {
 }
 
 impl<T> Window for Result<T, anyhow::Error> where T: Window {
+    type Action = Option<T::Action>;
+
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
             Ok(x) => x.render(area, buf),
@@ -97,10 +101,10 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
         }
     }
 
-    fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
+    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error> {
         match self {
-            Ok(x) => x.handle_key_event(key),
-            _ => Ok(())
+            Ok(x) => Some(x.handle_key_event(key)).transpose(),
+            _ => Ok(None)
         }
     }
 

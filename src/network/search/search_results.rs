@@ -106,26 +106,25 @@ impl Window for SearchResultsMenu {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), anyhow::Error> {
         match self.mode {
             SearchResultsMenuMode::Results => {
-                match key.code {
-                    KeyCode::Enter => {
-                        self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()));
-                        self.mode = SearchResultsMenuMode::Post;
-                    },
-                    _ => {
-                        self.search_results.handle_key_event(key)?;
-
+                match self.search_results.handle_key_event(key)? {
+                    SearchResultsAction::Moved => {
                         if self.search_results.has_selected_article() {
                             self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()))
                         } else {
                             self.post_widget = None
                         }
-                    }
+                    },
+                    SearchResultsAction::Selected => {
+                        self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()));
+                        self.mode = SearchResultsMenuMode::Post;
+                    },
+                    _ => {}
                 }
             },
             SearchResultsMenuMode::Post => {
                 match key.code {
                     KeyCode::Char('b') => self.mode = SearchResultsMenuMode::Results,
-                    _ => self.post_widget.handle_key_event(key)?
+                    _ => _ = self.post_widget.handle_key_event(key)?
                 }
             }
         }
@@ -143,7 +142,7 @@ impl Window for SearchResultsMenu {
 
         match self.mode {
             SearchResultsMenuMode::Results => {
-                self.search_results.render_selected(left, buf, &mut vec![Label::new("j", "down"), Label::new("k", "up"), Label::new("enter", "select")]);
+                self.search_results.render_selected(left, buf, &mut vec![]);
                 self.post_widget.render_unselected(right, buf, "");
             }
             SearchResultsMenuMode::Post => {
@@ -154,15 +153,22 @@ impl Window for SearchResultsMenu {
     }
 }
 
-impl Window for SearchResults {
-    fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), anyhow::Error> {
-        match key.code {
-            KeyCode::Char('j') => {self.list_state.scroll_down_by(1)}
-            KeyCode::Char('k') => {self.list_state.scroll_up_by(1)}
-            _ => {}
-        }
+pub enum SearchResultsAction {
+    Nothin,
+    Moved,
+    Selected,
+}
 
-        Ok(())
+impl Window for SearchResults {
+    type Action = SearchResultsAction;
+    
+    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, anyhow::Error> {
+        Ok(match key.code {
+            KeyCode::Char('j') => {self.list_state.scroll_down_by(1); Self::Action::Moved}
+            KeyCode::Char('k') => {self.list_state.scroll_up_by(1); Self::Action::Moved}
+            KeyCode::Enter => Self::Action::Selected,
+            _ => {Self::Action::Nothin}
+        })
     }
 
     fn render(&mut self, area: Rect, buf: &mut Buffer) {

@@ -21,7 +21,8 @@ impl SearchBar {
 }
 
 impl Window for SearchBar {
-	fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
+	type Action = Option<String>;
+	fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error> {
 		match key.code {
             KeyCode::Char(c) => {
                 self.text.push(c);
@@ -29,9 +30,12 @@ impl Window for SearchBar {
             KeyCode::Backspace => {
                 let _ = self.text.pop();
             }
+            KeyCode::Enter => {
+            	if !self.text.is_empty() {return Ok(Some(self.text.clone()))}
+            }
             _ => {}
         }
-        Ok(())
+        Ok(None)
 	}
 
 	fn render(&mut self, area: Rect, buf: &mut Buffer) {

@@ -1,3 +1,5 @@
+#![feature(associated_type_defaults)]
+
 pub mod cli;
 use cli::Cli;
 
