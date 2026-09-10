@@ -3,7 +3,7 @@ use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
 use crate::tui::{FramedWindow, Window, Label};
-use crate::network::{Server, ServerList, search_results};
+use crate::network::{Server, ServerList};
 use crate::posts::{Post, PostWidget};
 
 use ratatui::widgets::{StatefulWidget, List, ListState};
@@ -164,7 +164,7 @@ impl Window for SearchResults {
 
         Ok(())
     }
-                    
+
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
         // The actual results part
         StatefulWidget::render(

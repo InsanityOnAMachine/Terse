@@ -5,7 +5,7 @@ use crate::tui;
 
 use ratatui::prelude::{Widget, Buffer, Rect};
 use ratatui::widgets::Block;
-use ratatui::style::{Style, Stylize};
+use ratatui::style::{Modifier, Style, Stylize};
 use crossterm::event::KeyEvent;
 
 use anyhow::Error;
@@ -73,7 +73,21 @@ impl<T> Window for Option<T> where T: Window {
     }
 }
 
-impl<T> FramedWindow for Option<T> where T: Window {}
+impl<T> FramedWindow for Option<T> where T: FramedWindow {
+    fn render_selected(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+        match self {
+            Some(window) => {window.render_selected(area, buf, labels)},
+            None => {tui::get_default_block().render(area, buf)}
+        }
+    }
+
+    fn render_unselected(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
+        match self {
+            Some(window) => {window.render_unselected(area, buf, &message)},
+            None => {tui::get_default_block().border_style(Style::new().gray()).render(area, buf)}
+        }
+    }
+}
 
 impl<T> Window for Result<T, anyhow::Error> where T: Window {
     fn render(&mut self, area: Rect, buf: &mut Buffer) {
