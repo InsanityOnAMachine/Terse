@@ -27,7 +27,7 @@ pub use info::*;
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct ServerList {
     pub servers: Vec<Server>,
-    default: Option<usize>,
+    pub default: Option<usize>,
     #[serde(skip)]
     client: Client,
 }
@@ -41,6 +41,11 @@ impl ServerList {
 
     pub fn get_default(&self) -> Result<&Server, SelectedServerError> {
         self.default.map(|x| &self.servers[x as usize]).ok_or(SelectedServerError::NoServers)
+    }
+
+    pub fn get_server(&self, idx: usize) -> Result<&Server, SelectedServerError> {
+        if self.servers.is_empty() {return Err(SelectedServerError::NoServers)}
+        Ok(self.servers.get(idx).ok_or(SelectedServerError::OutOfBounds { idx, max: self.servers.len() })?)
     }
 
     pub fn from_config_file(file_path: PathBuf) -> Result<ServerList, DataStorageError> {

@@ -1,10 +1,11 @@
-use crate::network::SearchResultsMenu;
-use anyhow::Error;
 use std::sync::Arc;
 use parking_lot::RwLock;
+
 use ratatui::layout::{ Layout, Direction, Constraint };
-use crate::{network::ServerList, tui::{Label, Window}};
-use super::{SearchResults, SearchBar};
+use crate::{network::{SearchServerSelector, ServerList}, tui::Window};
+use super::{SearchResults, SearchResultsMenu, SearchBar, SearchBarMenu, SearchBarMenuAction};
+
+use anyhow::Error;
 
 use ratatui::{
     buffer::Buffer,
@@ -20,7 +21,7 @@ pub enum SearchMenuMode {
 
 pub struct SearchMenu {
     results: Result<SearchResultsMenu, Error>,
-    search_bar: SearchBar,
+    search_bar: SearchBarMenu,
     mode: SearchMenuMode,
     server_list: Arc<RwLock<ServerList>>
 }
@@ -28,7 +29,15 @@ pub struct SearchMenu {
 // TODO: it should *create* a search menu and prompt *it* to search...
 impl SearchMenu {
     pub fn new(query: String, server_list: Arc<RwLock<ServerList>>) -> Self {
-        let mut menu = Self {results: Err(Error::msg("WAITING AND THIS SHOULD BE A SPECIAL TYPE...")), search_bar: SearchBar::new(query.clone()), mode: SearchMenuMode::Search, server_list};
+        let mut menu = Self {
+            results: Err(Error::msg("WAITING AND THIS SHOULD BE A SPECIAL TYPE...")),
+            search_bar: SearchBarMenu::new(
+                SearchBar::new(query.clone()),
+                SearchServerSelector::new(server_list.clone()),
+            ),
+            mode: SearchMenuMode::Search,
+            server_list
+        };
         menu.process_search(query);
         menu
     }
@@ -61,8 +70,8 @@ impl Window for SearchMenu {
                     return Ok(())
                 }
 
-                if let Some(text) = self.search_bar.handle_key_event(key)? {
-                    self.process_search(text);
+                if let SearchBarMenuAction::Search { query, server } = self.search_bar.handle_key_event(key)? {
+                    self.process_search(query);
                 }
             }
         }
@@ -83,7 +92,7 @@ impl Window for SearchMenu {
             (&mut self.search_bar).render_greyed_out(top, buf, "ctrl+k");
             (&mut self.results).render(bottom, buf);
         } else {
-            (&mut self.search_bar).render_with_help(top, buf, &mut vec![Label::new("enter", "search")]);
+            (&mut self.search_bar).render_with_help(top, buf, &mut vec![]);
             (&mut self.results).render_greyed_out(bottom, buf, "ctrl+j");
         }
         return

@@ -10,13 +10,10 @@ use crate::network::LoginInfo;
 // RIP: use std::borrow::Borrow; I have no idea why you even existed or if I even wrote you.
 
 #[derive(Clone, Serialize, Deserialize)]
-#[serde(from="ServerSerializer")]
-#[serde(into="ServerSerializer")]
 #[derive(PartialEq)]
 #[derive(Eq)]
 #[derive(Hash)]
 pub struct Server {
-    #[serde(with = "url_serde")]
     url: Url, 
     pub login_info: Option<LoginInfo>,
 }
@@ -58,13 +55,21 @@ impl Server {
         return url;
     }
 
+    pub fn url_string(&self) -> String {
+        let host = self.url.host_str().unwrap_or("");
+        let port = &self.url.port().map_or(String::from(""), |x| String::from(":") + &x.to_string());
+        let path = self.url.path();
+        
+        String::from(host) + port + if path == "/" {""} else {path}
+    }
+
     pub fn as_string(&self, show_password: bool, selected: bool) -> String {
         let mut s = String::new();
 
         if selected {
-            writeln!(s, "{}", Colorize::yellow(self.url().as_str())).expect("String writing should always work");
+            writeln!(s, "{}", Colorize::yellow(self.url_string().as_str())).expect("String writing should always work");
         } else {
-            writeln!(s, "{}", self.url().as_str()).expect("String writing should always work");
+            writeln!(s, "{}", self.url_string()).expect("String writing should always work");
         }
         writeln!(s, "{}", self.login_info.clone().map_or(
             String::from("(Not signed in)"), 
