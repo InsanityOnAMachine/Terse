@@ -56,7 +56,6 @@ impl App {
                 }
                 _ => {}
             }
-            let _  = window.update();
         }
         Ok(())
     }

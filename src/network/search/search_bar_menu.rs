@@ -71,4 +71,10 @@ impl Window for SearchBarMenu {
 		Ok(SearchBarMenuAction::Nothin)
 	}
 
+	fn deselect(&mut self) {
+	    self.mode = SearchBarMenuMode::Search;
+	    self.search_bar.deselect();
+	    self.server_selector.deselect();
+	}
+
 }

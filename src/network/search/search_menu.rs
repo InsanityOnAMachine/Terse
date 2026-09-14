@@ -21,17 +21,16 @@ pub enum SearchMenuMode {
 
 pub struct SearchMenu {
     results: Result<SearchResultsMenu, Error>,
-    search_bar: SearchBarMenu,
+    search_menu: SearchBarMenu,
     mode: SearchMenuMode,
     server_list: Arc<RwLock<ServerList>>
 }
 
-// TODO: it should *create* a search menu and prompt *it* to search...
 impl SearchMenu {
     pub fn new(query: String, server_list: Arc<RwLock<ServerList>>) -> Self {
         let mut menu = Self {
             results: Err(Error::msg("WAITING AND THIS SHOULD BE A SPECIAL TYPE...")),
-            search_bar: SearchBarMenu::new(
+            search_menu: SearchBarMenu::new(
                 SearchBar::new(query.clone()),
                 SearchServerSelector::new(server_list.clone()),
             ),
@@ -60,6 +59,7 @@ impl Window for SearchMenu {
             SearchMenuMode::Results => {
                 if let KeyCode::Char('k') = key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
                     self.mode = SearchMenuMode::Search;
+                    self.results.deselect();
                     return Ok(())
                 }
                 self.results.handle_key_event(key)?;
@@ -67,10 +67,11 @@ impl Window for SearchMenu {
             SearchMenuMode::Search => {
                 if let KeyCode::Char('j') = key.code && key.modifiers.contains(KeyModifiers::CONTROL) {
                     self.mode = SearchMenuMode::Results;
+                    self.search_menu.deselect();
                     return Ok(())
                 }
 
-                if let SearchBarMenuAction::Search { query, server } = self.search_bar.handle_key_event(key)? {
+                if let SearchBarMenuAction::Search { query, server } = self.search_menu.handle_key_event(key)? {
                     self.process_search(query);
                 }
             }
@@ -88,12 +89,13 @@ impl Window for SearchMenu {
             ])
             .areas(area);
 
+        // We render the search menu second 'cause its dropdown needs to be on top when opened
         if let SearchMenuMode::Results = &mut self.mode {
-            (&mut self.search_bar).render_greyed_out(top, buf, "ctrl+k");
             (&mut self.results).render(bottom, buf);
+            (&mut self.search_menu).render_greyed_out(top, buf, "ctrl+k");
         } else {
-            (&mut self.search_bar).render_with_help(top, buf, &mut vec![]);
             (&mut self.results).render_greyed_out(bottom, buf, "ctrl+j");
+            (&mut self.search_menu).render_with_help(top, buf, &mut vec![]);
         }
         return
     }

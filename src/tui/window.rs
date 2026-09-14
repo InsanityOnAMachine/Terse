@@ -10,10 +10,25 @@ use crossterm::event::KeyEvent;
 
 use anyhow::Error;
 
+/// The Window class is basically a component;
+///
+/// It has:
+/// - key event handling, which returns a Result of the defined type Action to report to its parent
+///   (by default (), and by the way, trait type defaults need a nightly feature flag right now)
+///
+/// - rendering support as a wrapper for ratatui's Widget, along with 
+/// - render_with_help() to have bottom keybinding instructions with the render
+/// - render_greyed_out() for deselected Windows, with an optional switch-key
+/// - get_labels() for any self-defined labels to be taken into account in render_with_help() besides the provided arguments
+/// - select() and deselect() for any on-leave action (which should be called by the parent and so on recursively)
+///
+/// Window is also implemented for Option<Window> and Result<Window>, and of course recursive containment is supported
 pub trait Window {
+    /// The type that is returned (in a Result along with anyhow::Error) from handle_key_event(), by default ()
     type Action = ();
+    /// Processes a single key event, returning a Result<Self::Action, anyhow::Error>
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
-    fn update(&mut self) -> Result<(), Error> {Ok(())}
+    //fn update(&mut self) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer);
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         self.render(area, buf);
@@ -42,6 +57,8 @@ pub trait Window {
         Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
     }
     fn get_labels() -> Vec<String> {vec![]}
+    fn select(&mut self) {}
+    fn deselect(&mut self) {}
 }
 
 impl<T> Window for Option<T> where T: Window {
@@ -69,13 +86,6 @@ impl<T> Window for Option<T> where T: Window {
         }
     }
 
-    fn update(&mut self) -> Result<(), Error> {
-        match self {
-            Some(x) => x.update(),
-            _ => Ok(())
-        }
-    }
-
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         match self {
             Some(window) => {window.render_with_help(area, buf, labels)},
@@ -88,6 +98,14 @@ impl<T> Window for Option<T> where T: Window {
             Some(window) => {window.render_greyed_out(area, buf, &message)},
             None => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
         }
+    }
+
+    fn select(&mut self) {
+        if let Some(window) = self {window.select();}
+    }
+
+    fn deselect(&mut self) {
+        if let Some(window) = self {window.deselect();}
     }
 }
 
@@ -117,13 +135,6 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
         }
     }
 
-    fn update(&mut self) -> Result<(), Error> {
-        match self {
-            Ok(x) => x.update(),
-            _ => Ok(())
-        }
-    }
-
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         match self {
             Ok(window) => {window.render_with_help(area, buf, labels)},
@@ -136,5 +147,13 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
             Ok(window) => {window.render_greyed_out(area, buf, &message)},
             Err(_) => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
         }
+    }
+
+    fn select(&mut self) {
+        if let Ok(window) = self {window.select();}
+    }
+
+    fn deselect(&mut self) {
+        if let Ok(window) = self {window.deselect();}
     }
 }

@@ -47,23 +47,6 @@ impl<'a> From<&'a SearchResultHeader> for Text<'a> {
     }
 }
 
-pub struct SearchResultsMenu {
-    search_results: SearchResults,
-    post_widget: Option<PostWidget>,
-    mode: SearchResultsMenuMode,
-}
-
-impl SearchResultsMenu {
-    pub fn new(search_results: SearchResults) -> Self {
-        Self {search_results, post_widget: None, mode: SearchResultsMenuMode::Results}
-    }
-}
-
-pub enum SearchResultsMenuMode {
-    Results,
-    Post,
-}
-
 pub struct SearchResults {
     links: Vec<SearchResult>,
     post_cache: HashMap<SearchResult, Post>,
@@ -83,7 +66,7 @@ impl SearchResults{
 
     pub fn get_selected_article(&mut self) -> Post {
         // https://stackoverflow.com/questions/37890405/is-there-a-way-to-simplify-converting-an-option-into-a-result-without-a-macro
-        let search_result = self.links.get(self.list_state.selected().unwrap_or(0)).unwrap();
+        let search_result = self.links.get(self.list_state.selected().unwrap_or(0).min(self.links.len()-1)).unwrap();
         if !self.post_cache.contains_key(search_result) {
             let server_list = self.server_list.read();
             let post = server_list.get_post(&search_result.server, search_result.header.postid).unwrap();
@@ -93,7 +76,7 @@ impl SearchResults{
     }
 
     pub fn has_selected_article(&self) -> bool {
-        let search_result = self.links.get(self.list_state.selected().unwrap_or(0));
+        let search_result = self.links.get(self.list_state.selected().unwrap_or(0).min(self.links.len()-1));
         search_result.map_or(false, |search_result: &SearchResult| self.post_cache.contains_key(search_result))
     }
 
@@ -101,6 +84,68 @@ impl SearchResults{
         // https://doc.rust-lang.org/std/option/enum.Option.html#method.unwrap_or
         return self.links.iter().map(|x| x.header.title.len()).max().unwrap_or(10)
     }
+}
+
+pub enum SearchResultsAction {
+    Nothin,
+    Moved,
+    Selected,
+}
+
+impl Window for SearchResults {
+    type Action = SearchResultsAction;
+    
+    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, anyhow::Error> {
+        Ok(match key.code {
+            KeyCode::Char('j') => {self.list_state.select_next(); Self::Action::Moved}
+            KeyCode::Char('k') => {self.list_state.select_previous(); Self::Action::Moved}
+            KeyCode::Enter => Self::Action::Selected,
+            _ => {Self::Action::Nothin}
+        })
+    }
+
+    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+        let block = tui::get_default_block();
+        let inner = block.inner(area);
+        block.render(area, buf);
+
+        // The actual results part
+        StatefulWidget::render(
+            List::new(self.links.iter().map(|x| &x.header))
+                // This can also be a style.
+                .highlight_style(Modifier::REVERSED)
+                .scroll_padding(3),
+            inner,
+            buf,
+            &mut self.list_state,
+        );
+    }
+    
+    fn get_labels() -> Vec<String> {
+        return vec![
+            Label::new("j", "down"),
+            Label::new("k", "up"),
+            Label::new("enter", "select"),
+        ]
+    }
+}
+
+
+pub struct SearchResultsMenu {
+    search_results: SearchResults,
+    post_widget: Option<PostWidget>,
+    mode: SearchResultsMenuMode,
+}
+
+impl SearchResultsMenu {
+    pub fn new(search_results: SearchResults) -> Self {
+        Self {search_results, post_widget: None, mode: SearchResultsMenuMode::Results}
+    }
+}
+
+pub enum SearchResultsMenuMode {
+    Results,
+    Post,
 }
 
 impl Window for SearchResultsMenu {
@@ -152,48 +197,8 @@ impl Window for SearchResultsMenu {
             }
         }
     }
-}
 
-pub enum SearchResultsAction {
-    Nothin,
-    Moved,
-    Selected,
-}
-
-impl Window for SearchResults {
-    type Action = SearchResultsAction;
-    
-    fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, anyhow::Error> {
-        Ok(match key.code {
-            KeyCode::Char('j') => {self.list_state.scroll_down_by(1); Self::Action::Moved}
-            KeyCode::Char('k') => {self.list_state.scroll_up_by(1); Self::Action::Moved}
-            KeyCode::Enter => Self::Action::Selected,
-            _ => {Self::Action::Nothin}
-        })
-    }
-
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
-        let block = tui::get_default_block();
-        let inner = block.inner(area);
-        block.render(area, buf);
-
-        // The actual results part
-        StatefulWidget::render(
-            List::new(self.links.iter().map(|x| &x.header))
-                // This can also be a style.
-                .highlight_style(Modifier::REVERSED)
-                .scroll_padding(3),
-            inner,
-            buf,
-            &mut self.list_state,
-        );
-    }
-    
-    fn get_labels() -> Vec<String> {
-        return vec![
-            Label::new("j", "down"),
-            Label::new("k", "up"),
-            Label::new("enter", "select"),
-        ]
+    fn deselect(&mut self) {
+        self.mode = SearchResultsMenuMode::Results
     }
 }
