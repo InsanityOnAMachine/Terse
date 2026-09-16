@@ -2,7 +2,7 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 
 use ratatui::layout::{ Layout, Direction, Constraint };
-use crate::{network::{SearchServerSelector, ServerList}, tui::Window};
+use crate::{network::{SearchServerSelector, ServerList, Server}, tui::Window};
 use super::{SearchResults, SearchResultsMenu, SearchBar, SearchBarMenu, SearchBarMenuAction};
 
 use anyhow::Error;
@@ -35,16 +35,16 @@ impl SearchMenu {
                 SearchServerSelector::new(server_list.clone()),
             ),
             mode: SearchMenuMode::Search,
-            server_list
+            server_list: server_list.clone()
         };
-        menu.process_search(query);
+        menu.process_search(query, server_list.read().get_default().unwrap());
         menu
     }
 
-    fn process_search(&mut self, query: String) {
+    fn process_search(&mut self, query: String, server: &Server) {
         let server_list = self.server_list.read();
         self.results = || -> Result<SearchResultsMenu, Error> {
-            let results = server_list.search(server_list.get_default()?, query)?;
+            let results = server_list.search(server, query)?;
             if results.is_empty() {return Err(Error::msg("No results matching that query!"))}
             return Ok(SearchResultsMenu::new(SearchResults::new(results, self.server_list.clone())))
         }();
@@ -72,7 +72,7 @@ impl Window for SearchMenu {
                 }
 
                 if let SearchBarMenuAction::Search { query, server } = self.search_menu.handle_key_event(key)? {
-                    self.process_search(query);
+                    self.process_search(query, &server);
                 }
             }
         }

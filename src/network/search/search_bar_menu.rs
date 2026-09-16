@@ -32,7 +32,7 @@ impl Window for SearchBarMenu {
 	fn render(&mut self, area: Rect, buf: &mut Buffer) {
 		let [left, right] = Layout::new(Direction::Horizontal, vec![
 			Constraint::Fill(1),
-			Constraint::Length(25)
+			Constraint::Min(25)
 		]).areas(area);
 
 		match self.mode {
