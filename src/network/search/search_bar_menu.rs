@@ -3,7 +3,7 @@ use ratatui::layout::{Layout, Direction, Constraint};
 use ratatui::prelude::{Rect, Buffer};
 
 use crate::network::{Server, SearchBar, SearchServerSelector};
-use crate::tui::{Window, Label};
+use crate::tui::{Component, Label};
 
 pub struct SearchBarMenu {
 	search_bar: SearchBar,
@@ -27,7 +27,7 @@ impl SearchBarMenu {
 	}
 }
 
-impl Window for SearchBarMenu {
+impl Component for SearchBarMenu {
 	type Action = SearchBarMenuAction;
 	fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 		let [left, right] = Layout::new(Direction::Horizontal, vec![

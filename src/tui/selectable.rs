@@ -22,7 +22,7 @@ impl<T> Selectable<T> where for<'a> Text<'a>: From<&'a T> {
     }
 }
 
-impl <T> Window for &mut Selectable<T> where for<'a> Text<'a>: From<&'a T> {
+impl <T> Component for &mut Selectable<T> where for<'a> Text<'a>: From<&'a T> {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
         match key.code {
             // TODO: clamp after!

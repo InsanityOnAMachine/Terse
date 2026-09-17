@@ -1,6 +1,6 @@
 use anyhow::Error;
 use ratatui::text::Line;
-use crate::tui::{self, Window};
+use crate::tui::{self, Component};
 
 use ratatui::{
     buffer::Buffer,
@@ -20,7 +20,7 @@ impl SearchBar {
 	}
 }
 
-impl Window for SearchBar {
+impl Component for SearchBar {
 	type Action = Option<String>;
 	fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error> {
 		match key.code {

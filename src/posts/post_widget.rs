@@ -1,6 +1,6 @@
 use ratatui::{buffer::Buffer, layout::{Offset, Rect, Size}, style::Style, widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, StatefulWidget, Widget}};
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::tui::{self, Label, Window};
+use crate::tui::{self, Label, Component};
 use super::Post;
 
 use anyhow::Error;
@@ -18,7 +18,7 @@ impl PostWidget {
     }
 }
 
-impl Window for PostWidget {
+impl Component for PostWidget {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
         match key.code {
             KeyCode::Char('j') => {self.scroll_state.next()}

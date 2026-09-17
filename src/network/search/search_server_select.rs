@@ -6,7 +6,7 @@ use ratatui::prelude::{Widget, Rect, Buffer, Text};
 use crossterm::event::KeyCode;
 
 use crate::network::{Server, ServerList};
-use crate::tui::{self, Window, Label};
+use crate::tui::{self, Component, Label};
 
 pub struct SearchServerSelector {
 	server_list: Arc<RwLock<ServerList>>,
@@ -28,7 +28,7 @@ impl SearchServerSelector {
 	}
 }
 
-impl Window for SearchServerSelector {
+impl Component for SearchServerSelector {
 	fn render(&mut self, area: Rect, buf: &mut Buffer, _selected: bool) {
 
             let block = tui::get_default_block();

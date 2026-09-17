@@ -1,5 +1,5 @@
 use std::time::Duration;
-use crate::tui::Window;
+use crate::tui::Component;
 
 use ratatui::{
     prelude::Stylize,
@@ -19,11 +19,11 @@ pub struct App {
 }
 
 impl App {
-    pub fn run<T: Window>(&mut self, window: &mut T) -> Result<(), std::io::Error> {
+    pub fn run<T: Component>(&mut self, window: &mut T) -> Result<(), std::io::Error> {
         ratatui::run(|terminal| self.run_loop(terminal, window))
     }
 
-    pub fn run_loop<T: Window>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<(), std::io::Error> {
+    pub fn run_loop<T: Component>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<(), std::io::Error> {
         while !self.exit {
             terminal.draw(|frame| {
                 // https://docs.rs/ratatui/latest/ratatui/prelude/struct.Layout.html#method.areas

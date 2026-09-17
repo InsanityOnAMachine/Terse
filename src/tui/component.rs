@@ -10,7 +10,7 @@ use crossterm::event::KeyEvent;
 
 use anyhow::Error;
 
-/// The Window class is basically a component;
+/// The Component class is basically a component;
 ///
 /// It has:
 /// - key event handling, which returns a Result of the defined type Action to report to its parent
@@ -18,12 +18,12 @@ use anyhow::Error;
 ///
 /// - rendering support as a wrapper for ratatui's Widget, along with 
 /// - render_with_help() to have bottom keybinding instructions with the render
-/// - render_greyed_out() for deselected Windows, with an optional switch-key
+/// - render_greyed_out() for deselected Components, with an optional switch-key
 /// - get_labels() for any self-defined labels to be taken into account in render_with_help() besides the provided arguments
 /// - select() and deselect() for any on-leave action (which should be called by the parent and so on recursively)
 ///
-/// Window is also implemented for Option<Window> and Result<Window>, and of course recursive containment is supported
-pub trait Window {
+/// Component is also implemented for Option<Component> and Result<Component>, and of course recursive containment is supported
+pub trait Component {
     /// The type that is returned (in a Result along with anyhow::Error) from handle_key_event(), by default ()
     type Action = ();
     /// Processes a single key event, returning a Result<Self::Action, anyhow::Error>
@@ -61,7 +61,7 @@ pub trait Window {
     fn deselect(&mut self) {}
 }
 
-impl<T> Window for Option<T> where T: Window {
+impl<T> Component for Option<T> where T: Component {
     type Action = Option<T::Action>;
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         match self {
@@ -113,7 +113,7 @@ impl<T> Window for Option<T> where T: Window {
     }
 }
 
-impl<T> Window for Result<T, anyhow::Error> where T: Window {
+impl<T> Component for Result<T, anyhow::Error> where T: Component {
     type Action = Option<T::Action>;
 
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {

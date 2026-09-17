@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
-use crate::tui::{self, Label, Window};
+use crate::tui::{self, Label, Component};
 use crate::network::{Server, ServerList};
 use crate::posts::{Post, PostWidget};
 
@@ -92,7 +92,7 @@ pub enum SearchResultsAction {
     Selected,
 }
 
-impl Window for SearchResults {
+impl Component for SearchResults {
     type Action = SearchResultsAction;
     
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, anyhow::Error> {
@@ -148,7 +148,7 @@ pub enum SearchResultsMenuMode {
     Post,
 }
 
-impl Window for SearchResultsMenu {
+impl Component for SearchResultsMenu {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), anyhow::Error> {
         match self.mode {
             SearchResultsMenuMode::Results => {

@@ -2,7 +2,7 @@ use std::sync::Arc;
 use parking_lot::RwLock;
 
 use ratatui::layout::{ Layout, Direction, Constraint };
-use crate::{network::{SearchServerSelector, ServerList, Server}, tui::Window};
+use crate::{network::{SearchServerSelector, ServerList, Server}, tui::Component};
 use super::{SearchResults, SearchResultsMenu, SearchBar, SearchBarMenu, SearchBarMenuAction};
 
 use anyhow::Error;
@@ -53,7 +53,7 @@ impl SearchMenu {
 }
 
 
-impl Window for SearchMenu {
+impl Component for SearchMenu {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
         match &self.mode {
             SearchMenuMode::Results => {

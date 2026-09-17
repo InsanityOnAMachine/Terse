@@ -7,8 +7,8 @@ pub use selectable::*;
 pub mod label;
 pub use label::*;
 
-pub mod window;
-pub use window::*;
+pub mod component;
+pub use component::*;
 
 #[cfg(debug_assertions)]
 pub mod blinker;
