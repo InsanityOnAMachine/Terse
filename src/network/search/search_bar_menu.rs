@@ -29,7 +29,7 @@ impl SearchBarMenu {
 
 impl Window for SearchBarMenu {
 	type Action = SearchBarMenuAction;
-	fn render(&mut self, area: Rect, buf: &mut Buffer) {
+	fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 		let [left, right] = Layout::new(Direction::Horizontal, vec![
 			Constraint::Fill(1),
 			Constraint::Min(25)
@@ -38,10 +38,10 @@ impl Window for SearchBarMenu {
 		match self.mode {
 			SearchBarMenuMode::Search => {
 				self.search_bar.render_with_help(left, buf, &mut vec![Label::new("enter", "search")]);
-				self.server_selector.render_greyed_out(right, buf, "ctrl-l");
+				self.server_selector.render_greyed_out(right, buf, if selected {"ctrl-l"} else {""});
 			},
 			SearchBarMenuMode::Server => {
-				self.search_bar.render_greyed_out(left, buf, "ctrl-h");
+				self.search_bar.render_greyed_out(left, buf, if selected {"ctrl-h"} else {""});
 				self.server_selector.render_with_help(right, buf, &mut vec![]);
 			}
 		}	    

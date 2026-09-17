@@ -80,7 +80,7 @@ impl Window for SearchMenu {
         Ok(())
     }
 
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         let [top, bottom] = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![
@@ -91,10 +91,10 @@ impl Window for SearchMenu {
 
         // We render the search menu second 'cause its dropdown needs to be on top when opened
         if let SearchMenuMode::Results = &mut self.mode {
-            (&mut self.results).render(bottom, buf);
-            (&mut self.search_menu).render_greyed_out(top, buf, "ctrl+k");
+            (&mut self.results).render(bottom, buf, selected);
+            (&mut self.search_menu).render_greyed_out(top, buf, if selected {"ctrl+k"} else {""});
         } else {
-            (&mut self.results).render_greyed_out(bottom, buf, "ctrl+j");
+            (&mut self.results).render_greyed_out(bottom, buf, if selected {"ctrl+j"} else {""});
             (&mut self.search_menu).render_with_help(top, buf, &mut vec![]);
         }
         return

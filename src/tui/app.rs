@@ -36,7 +36,7 @@ impl App {
                 .areas(frame.area());
 
                 // https://stackoverflow.com/questions/30026893/how-to-use-a-map-over-vectors#30026986
-                window.render(top, frame.buffer_mut());
+                window.render(top, frame.buffer_mut(), true);
 
                 #[cfg(debug_assertions)]
                 self.blinker.render(bottom, frame.buffer_mut());

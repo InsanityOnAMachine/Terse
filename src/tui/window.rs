@@ -29,15 +29,15 @@ pub trait Window {
     /// Processes a single key event, returning a Result<Self::Action, anyhow::Error>
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
     //fn update(&mut self) -> Result<(), Error> {Ok(())}
-    fn render(&mut self, area: Rect, buf: &mut Buffer);
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool);
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
-        self.render(area, buf);
+        self.render(area, buf, true);
         labels.append(&mut Self::get_labels());
         let key_bindings = labels.join("-");
         Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: (area.height - 1).into()}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
     }
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
-        self.render(area, buf);
+        self.render(area, buf, false);
 
         // We yank the code for Buffer::set_style() because we only want to set the bg style if it is not empty
         // https://docs.rs/ratatui-core/0.1.2/src/ratatui_core/buffer/buffer.rs.html#405
@@ -63,9 +63,9 @@ pub trait Window {
 
 impl<T> Window for Option<T> where T: Window {
     type Action = Option<T::Action>;
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         match self {
-            Some(x) => x.render(area, buf),
+            Some(x) => x.render(area, buf, selected),
             _ => {
                 // https://www.reddit.com/r/learnrust/comments/16ibtin/centring_text_in_ratatui/
                 Paragraph::new("Nothing here!").gray().centered()
@@ -89,32 +89,36 @@ impl<T> Window for Option<T> where T: Window {
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         match self {
             Some(window) => {window.render_with_help(area, buf, labels)},
-            None => {self.render(area, buf)}
+            None => {self.render(area, buf, true)}
         }
     }
 
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
         match self {
             Some(window) => {window.render_greyed_out(area, buf, &message)},
-            None => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
+            None => {self.render(area, buf, false); buf.set_style(area, Style::new().gray());}
         }
     }
-
     fn select(&mut self) {
-        if let Some(window) = self {window.select();}
+        match self {
+            Some(window) => {window.select()},
+            _ => {}
+        }
     }
-
     fn deselect(&mut self) {
-        if let Some(window) = self {window.deselect();}
+        match self {
+            Some(window) => {window.deselect()},
+            _ => {}
+        }
     }
 }
 
 impl<T> Window for Result<T, anyhow::Error> where T: Window {
     type Action = Option<T::Action>;
 
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         match self {
-            Ok(x) => x.render(area, buf),
+            Ok(x) => x.render(area, buf, selected),
             Err(e) => {
                 // https://www.reddit.com/r/learnrust/comments/16ibtin/centring_text_in_ratatui/
                 Paragraph::new(format!("(!) There was an error: {} (!)", e)).red().centered()
@@ -138,22 +142,26 @@ impl<T> Window for Result<T, anyhow::Error> where T: Window {
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
         match self {
             Ok(window) => {window.render_with_help(area, buf, labels)},
-            Err(_) => {self.render(area, buf)}
+            Err(_) => {self.render(area, buf, true)}
         }
     }
 
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, message: &(impl AsRef<str> + ?Sized)) {
         match self {
             Ok(window) => {window.render_greyed_out(area, buf, &message)},
-            Err(_) => {self.render(area, buf); buf.set_style(area, Style::new().gray());}
+            Err(_) => {self.render(area, buf, false); buf.set_style(area, Style::new().gray());}
         }
     }
-
     fn select(&mut self) {
-        if let Ok(window) = self {window.select();}
+        match self {
+            Ok(window) => {window.select()},
+            _ => {}
+        }
     }
-
     fn deselect(&mut self) {
-        if let Ok(window) = self {window.deselect();}
+        match self {
+            Ok(window) => {window.deselect()},
+            _ => {}
+        }
     }
 }

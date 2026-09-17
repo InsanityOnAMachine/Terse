@@ -34,7 +34,7 @@ impl Window for PostWidget {
     // Scrollbar styyyyling!
     // TODO: PostWidget by itself! Organize!
     // TODO: Scrollbar actually to scale!
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 
         let block = tui::get_default_block();
         let inner = block.inner(area);
@@ -46,6 +46,8 @@ impl Window for PostWidget {
         Paragraph::new(self.post.content.clone())
         .scroll((self.scroll_state.get_position() as u16, 0))
         .render(inner, buf);
+
+        if !selected {return}
 
         StatefulWidget::render(
             Scrollbar::new(ScrollbarOrientation::VerticalRight).thumb_symbol("ℋ").thumb_style(Style::new().red().on_red())
@@ -63,5 +65,10 @@ impl Window for PostWidget {
             Label::new("j", "down"),
             Label::new("k", "up"),
         ]
+    }
+    fn deselect(&mut self) {
+        // This is necessary for continuity; when we enter into a PostWidget in the search menu, we
+        // erase the preview and make a new one, so the preview must reset to 0 when not selected.
+        self.scroll_state.first();
     }
 }

@@ -104,7 +104,7 @@ impl Window for SearchResults {
         })
     }
 
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, _selected: bool) {
         let block = tui::get_default_block();
         let inner = block.inner(area);
         block.render(area, buf);
@@ -161,6 +161,10 @@ impl Window for SearchResultsMenu {
                         }
                     },
                     SearchResultsAction::Selected => {
+                        // This means that even if we are showing the preview, we make a new post
+                        // widget anyway. Also means that on deselect for the PostWidget we need to
+                        // wind it back up to the top so there's no jump as the new one always
+                        // starts out at 0 scroll
                         self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()));
                         self.mode = SearchResultsMenuMode::Post;
                     },
@@ -169,7 +173,10 @@ impl Window for SearchResultsMenu {
             },
             SearchResultsMenuMode::Post => {
                 match key.code {
-                    KeyCode::Char('b') => self.mode = SearchResultsMenuMode::Results,
+                    KeyCode::Char('b') => {
+                        self.mode = SearchResultsMenuMode::Results;
+                        self.post_widget.deselect();
+                    }
                     _ => _ = self.post_widget.handle_key_event(key)?
                 }
             }
@@ -177,7 +184,7 @@ impl Window for SearchResultsMenu {
         Ok(())
     }
 
-    fn render(&mut self, area: Rect, buf: &mut Buffer) {
+    fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         let [left, right] = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(vec![
@@ -192,7 +199,7 @@ impl Window for SearchResultsMenu {
                 self.post_widget.render_greyed_out(right, buf, "");
             }
             SearchResultsMenuMode::Post => {
-                self.search_results.render_greyed_out(left, buf, "b");
+                self.search_results.render_greyed_out(left, buf, if selected {"b"} else {""});
                 self.post_widget.render_with_help(right, buf, &mut vec![]);
             }
         }

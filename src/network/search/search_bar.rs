@@ -38,7 +38,7 @@ impl Window for SearchBar {
         Ok(None)
 	}
 
-	fn render(&mut self, area: Rect, buf: &mut Buffer) {
+	fn render(&mut self, area: Rect, buf: &mut Buffer, _selected: bool) {
 		let block = tui::get_default_block();
 		let inner = block.inner(area);
 		block.render(area, buf);

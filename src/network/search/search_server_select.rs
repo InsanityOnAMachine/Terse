@@ -29,7 +29,7 @@ impl SearchServerSelector {
 }
 
 impl Window for SearchServerSelector {
-	fn render(&mut self, area: Rect, buf: &mut Buffer) {
+	fn render(&mut self, area: Rect, buf: &mut Buffer, _selected: bool) {
 
             let block = tui::get_default_block();
             let inner = block.inner(area);
