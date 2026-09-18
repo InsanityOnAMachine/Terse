@@ -10,7 +10,8 @@ use crossterm::event::KeyEvent;
 
 use anyhow::Error;
 
-/// The Component class is basically a component;
+/// The Component struct is basically a component;
+/// wow. That comment was left over from when this struct was called Window.
 ///
 /// It has:
 /// - key event handling, which returns a Result of the defined type Action to report to its parent
@@ -30,10 +31,9 @@ pub trait Component {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
     //fn update(&mut self) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool);
-    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         self.render(area, buf, true);
-        labels.append(&mut Self::get_labels());
-        let key_bindings = labels.join("-");
+        let key_bindings = self.get_labels().join("-");
         Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: (area.height - 1).into()}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
     }
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
@@ -56,7 +56,7 @@ pub trait Component {
 
         Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
     }
-    fn get_labels() -> Vec<String> {vec![]}
+    fn get_labels(&self) -> Vec<String> {vec![]}
     fn select(&mut self) {}
     fn deselect(&mut self) {}
 }
@@ -86,9 +86,9 @@ impl<T> Component for Option<T> where T: Component {
         }
     }
 
-    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
-            Some(window) => {window.render_with_help(area, buf, labels)},
+            Some(window) => {window.render_with_help(area, buf)},
             None => {self.render(area, buf, true)}
         }
     }
@@ -139,9 +139,9 @@ impl<T> Component for Result<T, anyhow::Error> where T: Component {
         }
     }
 
-    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer, labels: &mut Vec<String>) {
+    fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
-            Ok(window) => {window.render_with_help(area, buf, labels)},
+            Ok(window) => {window.render_with_help(area, buf)},
             Err(_) => {self.render(area, buf, true)}
         }
     }

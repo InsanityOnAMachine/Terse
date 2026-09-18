@@ -60,7 +60,7 @@ impl Component for PostWidget {
         );
     }
 
-    fn get_labels() -> Vec<String> {
+    fn get_labels(&self) -> Vec<String> {
         return vec![
             Label::new("j", "down"),
             Label::new("k", "up"),

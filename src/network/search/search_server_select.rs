@@ -49,7 +49,7 @@ impl Component for SearchServerSelector {
 	    Ok(())
 	}
     
-    fn get_labels() -> Vec<String> {
+    fn get_labels(&self) -> Vec<String> {
         return vec![
             Label::new("j", "next"),
             Label::new("k", "prev"),

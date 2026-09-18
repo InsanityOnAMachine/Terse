@@ -1,6 +1,6 @@
 use anyhow::Error;
 use ratatui::text::Line;
-use crate::tui::{self, Component};
+use crate::tui::{self, Component, Label};
 
 use ratatui::{
     buffer::Buffer,
@@ -45,4 +45,9 @@ impl Component for SearchBar {
 
 		Line::from(self.text.as_str()).render(inner, buf);
 	}
+        fn get_labels(&self) -> Vec<String> {
+            return vec![
+                Label::new("enter", "search")
+            ]
+        }
 }

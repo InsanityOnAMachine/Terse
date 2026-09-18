@@ -121,7 +121,7 @@ impl Component for SearchResults {
         );
     }
     
-    fn get_labels() -> Vec<String> {
+    fn get_labels(&self) -> Vec<String> {
         return vec![
             Label::new("j", "down"),
             Label::new("k", "up"),
@@ -195,17 +195,18 @@ impl Component for SearchResultsMenu {
 
         match self.mode {
             SearchResultsMenuMode::Results => {
-                self.search_results.render_with_help(left, buf, &mut vec![]);
+                self.search_results.render_with_help(left, buf);
                 self.post_widget.render_greyed_out(right, buf, "");
             }
             SearchResultsMenuMode::Post => {
                 self.search_results.render_greyed_out(left, buf, if selected {"b"} else {""});
-                self.post_widget.render_with_help(right, buf, &mut vec![]);
+                self.post_widget.render_with_help(right, buf) 
             }
         }
     }
 
     fn deselect(&mut self) {
-        self.mode = SearchResultsMenuMode::Results
+        self.mode = SearchResultsMenuMode::Results;
+        self.post_widget.deselect();
     }
 }

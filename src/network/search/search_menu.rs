@@ -95,7 +95,7 @@ impl Component for SearchMenu {
             (&mut self.search_menu).render_greyed_out(top, buf, if selected {"ctrl+k"} else {""});
         } else {
             (&mut self.results).render_greyed_out(bottom, buf, if selected {"ctrl+j"} else {""});
-            (&mut self.search_menu).render_with_help(top, buf, &mut vec![]);
+            (&mut self.search_menu).render_with_help(top, buf);
         }
         return
     }
