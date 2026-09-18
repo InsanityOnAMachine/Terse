@@ -4,48 +4,14 @@ use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
 use crate::tui::{self, Label, Component};
-use crate::network::{Server, ServerList};
+use crate::network::{ServerList, SearchResult};
 use crate::posts::{Post, PostWidget};
 
 use ratatui::widgets::{StatefulWidget, List, ListState};
-use ratatui::text::{Span, Line, Text};
 use ratatui::prelude::{Rect, Buffer, Modifier};
 
 use crossterm::event::{KeyCode, KeyEvent};
 
-use serde::Deserialize;
-
-
-#[derive(Deserialize, Debug)]
-#[derive(Eq)]
-#[derive(PartialEq)]
-#[derive(Hash)]
-#[derive(Clone)]
-pub struct SearchResultHeader {
-    pub title: String,
-    pub postid: u16,
-}
-
-#[derive(Eq, Hash, PartialEq)]
-#[derive(Clone)]
-pub struct SearchResult {
-    pub header: SearchResultHeader,
-    pub server: Server,
-}
-
-
-impl SearchResult {
-    pub fn new(header: SearchResultHeader, server: Server) -> Self {
-        Self {header, server}
-    }
-}
-
-// https://www.reddit.com/r/rust/comments/7zm0j2/intofrom_for_nonconsuming_conversions/
-impl<'a> From<&'a SearchResultHeader> for Text<'a> {
-    fn from(value: &'a SearchResultHeader) -> Self {
-        return Text::from(vec![Line::from(Span::from(&value.title))]);
-    }
-}
 
 pub struct SearchResults {
     links: Vec<SearchResult>,

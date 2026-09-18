@@ -2,8 +2,10 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::layout::{Layout, Direction, Constraint};
 use ratatui::prelude::{Rect, Buffer};
 
-use crate::network::{Server, SearchBar, SearchServerSelector};
-use crate::tui::{Component, Label};
+use crate::network::Server;
+use crate::tui::Component;
+
+use super::{SearchBar, SearchServerSelector};
 
 pub struct SearchBarMenu {
     search_bar: SearchBar,
@@ -22,6 +24,9 @@ pub enum SearchBarMenuAction {
 }
 
 impl SearchBarMenu {
+    /// I opt to make this take in the components as arguments instead of stuff to build the
+    /// components because it is less coupled, if we change the arguments that the components are
+    /// made of. Still, both ways have their pros and cons. 
     pub fn new(search_bar: SearchBar, server_selector: SearchServerSelector) -> Self {
         Self {search_bar, server_selector, mode: SearchBarMenuMode::Search}
     }
@@ -80,5 +85,4 @@ impl Component for SearchBarMenu {
         self.search_bar.deselect();
         self.server_selector.deselect();
     }
-
 }

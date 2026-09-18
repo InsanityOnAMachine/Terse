@@ -1,4 +1,3 @@
-use crate::network::SearchResultsMenu;
 use parking_lot::RwLock;
 use std::sync::Arc;
 use clap::{Parser, Subcommand};
@@ -7,8 +6,8 @@ use anyhow::Error;
 use url::Url;
 use std::path::PathBuf;
 
-use crate::tui::App;
-use crate::network::{LoginInfo, ServerList, SearchMenu, SearchResults};
+use crate::tui::{App, SearchMenu};
+use crate::network::{LoginInfo, ServerList};
 use crate::data::{self, DataStorageError};
 
 pub mod server_subcommand;

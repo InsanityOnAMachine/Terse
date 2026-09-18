@@ -1,9 +1,23 @@
+pub mod search_menu;
+
+pub mod search_bar;
+pub use search_bar::*;
+
+pub mod search_results;
+pub use search_results::*;
+
+pub mod search_bar_menu;
+pub use search_bar_menu::*;
+
+pub mod search_server_select;
+pub use search_server_select::*;
+
+
 use std::sync::Arc;
 use parking_lot::RwLock;
 
 use ratatui::layout::{ Layout, Direction, Constraint };
-use crate::{network::{SearchServerSelector, ServerList, Server}, tui::Component};
-use super::{SearchResults, SearchResultsMenu, SearchBar, SearchBarMenu, SearchBarMenuAction};
+use crate::{network::{ServerList, Server}, tui::Component};
 
 use anyhow::Error;
 

@@ -15,6 +15,9 @@ pub mod blinker;
 #[cfg(debug_assertions)]
 pub use blinker::*;
 
+pub mod search_menu;
+pub use search_menu::*;
+
 use ratatui::widgets::{Block, BorderType};
 use ratatui::style::Style;
 

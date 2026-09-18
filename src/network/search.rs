@@ -1,14 +1,38 @@
-pub mod search_menu;
-pub use search_menu::*;
+use serde::Deserialize;
+use crate::network::Server;
 
-pub mod search_results;
-pub use search_results::*;
+use ratatui::text::Text;
 
-pub mod search_bar;
-pub use search_bar::*;
+#[derive(Deserialize, Debug)]
+#[derive(Eq)]
+#[derive(PartialEq)]
+#[derive(Hash)]
+#[derive(Clone)]
+/// This is what the Server returns to us when we search it;
+/// a detailed link to a post, not bound to any particular Server.
+pub struct SearchResultHeader {
+    pub title: String,
+    pub postid: u16,
+}
 
-pub mod search_bar_menu;
-pub use search_bar_menu::*;
+/// This is basically a detailed pointer to a specific post, on a specific Server.
+#[derive(Eq, Hash, PartialEq)]
+#[derive(Clone)]
+pub struct SearchResult {
+    pub header: SearchResultHeader,
+    pub server: Server,
+}
 
-pub mod search_server_select;
-pub use search_server_select::*;
+
+impl SearchResult {
+    pub fn new(header: SearchResultHeader, server: Server) -> Self {
+        Self {header, server}
+    }
+}
+
+// https://www.reddit.com/r/rust/comments/7zm0j2/intofrom_for_nonconsuming_conversions/
+impl<'a> From<&'a SearchResultHeader> for Text<'a> {
+    fn from(value: &'a SearchResultHeader) -> Self {
+        return Self::from(value.title.as_str());
+    }
+}
