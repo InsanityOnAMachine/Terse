@@ -1,5 +1,3 @@
-pub mod search_menu;
-
 pub mod search_bar;
 pub use search_bar::*;
 
@@ -112,5 +110,9 @@ impl Component for SearchMenu {
             (&mut self.search_menu).render_with_help(top, buf);
         }
         return
+    }
+
+    fn get_min_size(&self) -> super::MinSize {
+        super::MinSize::vmerge(vec![self.search_menu.get_min_size(), self.results.get_min_size()])
     }
 }

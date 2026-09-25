@@ -37,7 +37,7 @@ impl Component for SearchBarMenu {
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         let [left, right] = Layout::new(Direction::Horizontal, vec![
             Constraint::Fill(1),
-            Constraint::Min(25)
+            Constraint::Min(self.server_selector.get_min_size().width)
         ]).areas(area);
 
         match self.mode {
@@ -84,5 +84,8 @@ impl Component for SearchBarMenu {
         self.mode = SearchBarMenuMode::Search;
         self.search_bar.deselect();
         self.server_selector.deselect();
+    }
+    fn get_min_size(&self) -> crate::tui::MinSize {
+        crate::tui::MinSize::hmerge(vec![self.search_bar.get_min_size(), self.server_selector.get_min_size()])
     }
 }

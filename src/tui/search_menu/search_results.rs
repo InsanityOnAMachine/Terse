@@ -94,6 +94,9 @@ impl Component for SearchResults {
             Label::new("enter", "select"),
         ]
     }
+    fn get_min_size(&self) -> tui::MinSize {
+        tui::MinSize::new((Label::join(self.get_labels()).len() + 2) as u16, 5)
+    }
 }
 
 
@@ -174,5 +177,8 @@ impl Component for SearchResultsMenu {
     fn deselect(&mut self) {
         self.mode = SearchResultsMenuMode::Results;
         self.post_widget.deselect();
+    }
+    fn get_min_size(&self) -> tui::MinSize {
+        tui::MinSize::hmerge(vec![self.search_results.get_min_size(), self.post_widget.get_min_size()])
     }
 }

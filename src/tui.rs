@@ -7,6 +7,9 @@ pub use selectable::*;
 pub mod label;
 pub use label::*;
 
+pub mod size;
+pub use size::*;
+
 pub mod component;
 pub use component::*;
 

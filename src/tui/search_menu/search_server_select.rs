@@ -55,4 +55,7 @@ impl Component for SearchServerSelector {
             Label::new("k", "prev"),
         ]
     }
+    fn get_min_size(&self) -> tui::MinSize {
+        tui::MinSize::new(25, 3)
+    }
 }

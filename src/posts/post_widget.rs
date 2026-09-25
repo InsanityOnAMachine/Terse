@@ -30,10 +30,7 @@ impl Component for PostWidget {
 
     // TODO: something with Margin? see
     // https://ratatui.rs/examples/widgets/scrollbar/
-    // TODO: all these in the same block! Scrollbar as part of it!
-    // Scrollbar styyyyling!
     // TODO: PostWidget by itself! Organize!
-    // TODO: Scrollbar actually to scale!
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 
         let block = tui::get_default_block();
@@ -70,5 +67,8 @@ impl Component for PostWidget {
         // This is necessary for continuity; when we enter into a PostWidget in the search menu, we
         // erase the preview and make a new one, so the preview must reset to 0 when not selected.
         self.scroll_state.first();
+    }
+    fn get_min_size(&self) -> tui::MinSize {
+        tui::MinSize::new(25,15)
     }
 }

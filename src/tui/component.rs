@@ -1,7 +1,7 @@
 use ratatui::widgets::Padding;
 use ratatui::layout::{Offset, Size};
 use ratatui::text::Text;
-use crate::tui;
+use crate::tui::{self, MinSize};
 
 use ratatui::prelude::{Widget, Buffer, Rect};
 use ratatui::widgets::{Paragraph};
@@ -9,6 +9,8 @@ use ratatui::style::{Color, Style, Stylize};
 use crossterm::event::KeyEvent;
 
 use anyhow::Error;
+
+// TODO: rename all the 'window' vars to 'cmpnt' or something
 
 /// The Component struct is basically a component;
 /// wow. That comment was left over from when this struct was called Window.
@@ -59,6 +61,8 @@ pub trait Component {
     fn get_labels(&self) -> Vec<String> {vec![]}
     fn select(&mut self) {}
     fn deselect(&mut self) {}
+    // TODO: this statement of get len and add 2 is not DRY.
+    fn get_min_size(&self) -> MinSize {return MinSize::new((super::Label::join(self.get_labels()).len() + 2) as u16,1)}
 }
 
 impl<T> Component for Option<T> where T: Component {
@@ -109,6 +113,12 @@ impl<T> Component for Option<T> where T: Component {
         match self {
             Some(window) => {window.deselect()},
             _ => {}
+        }
+    }
+    fn get_min_size(&self) -> MinSize {
+        match self {
+            Some(window) => window.get_min_size(),
+            _ => MinSize::new(1,1)
         }
     }
 }
@@ -162,6 +172,12 @@ impl<T> Component for Result<T, anyhow::Error> where T: Component {
         match self {
             Ok(window) => {window.deselect()},
             _ => {}
+        }
+    }
+    fn get_min_size(&self) -> MinSize {
+        match self {
+            Ok(window) => window.get_min_size(),
+            _ => MinSize::new(1,1)
         }
     }
 }

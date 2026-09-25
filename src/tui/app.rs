@@ -2,7 +2,7 @@ use std::time::Duration;
 use crate::tui::Component;
 
 use ratatui::{
-    prelude::Stylize,
+    prelude::Stylize, text::Text,
     DefaultTerminal, layout::{Layout, Direction, Constraint}, text::Span, widgets::Widget,
 };
 
@@ -25,7 +25,11 @@ impl App {
 
     pub fn run_loop<T: Component>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<(), std::io::Error> {
         while !self.exit {
-            terminal.draw(|frame| {
+           terminal.draw(|frame| {
+                if !window.get_min_size().fits_in(frame.area()) {
+                    Text::from("Too small! Make bigger!").centered().render(frame.area(), frame.buffer_mut());
+                    return
+                }
                 // https://docs.rs/ratatui/latest/ratatui/prelude/struct.Layout.html#method.areas
                 let [top, bottom] = Layout::default()
                 .direction(Direction::Vertical)
@@ -41,6 +45,8 @@ impl App {
                 #[cfg(debug_assertions)]
                 self.blinker.render(bottom, frame.buffer_mut());
                 Span::from("ESC to quit").on_red().into_right_aligned_line().render(bottom, frame.buffer_mut());
+
+                Text::from(format!("{:?}", window.get_min_size())).render(bottom, frame.buffer_mut())
             })?;
 
             match event::poll(Duration::from_millis(0)) {
