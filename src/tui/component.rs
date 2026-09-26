@@ -11,6 +11,8 @@ use crossterm::event::KeyEvent;
 use anyhow::Error;
 
 // TODO: rename all the 'window' vars to 'cmpnt' or something
+// TODO: MinSize can have a Default impl that is 8,5. A good default size so we needn't redefine it
+// in Option and Result for Component
 
 /// The Component struct is basically a component;
 /// wow. That comment was left over from when this struct was called Window.
@@ -118,7 +120,7 @@ impl<T> Component for Option<T> where T: Component {
     fn get_min_size(&self) -> MinSize {
         match self {
             Some(window) => window.get_min_size(),
-            _ => MinSize::new(1,1)
+            _ => MinSize::new(8,5)
         }
     }
 }
@@ -177,7 +179,7 @@ impl<T> Component for Result<T, anyhow::Error> where T: Component {
     fn get_min_size(&self) -> MinSize {
         match self {
             Ok(window) => window.get_min_size(),
-            _ => MinSize::new(1,1)
+            _ => MinSize::new(8,5)
         }
     }
 }
