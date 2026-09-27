@@ -136,8 +136,7 @@ impl Cli {
     fn process_whoami(server_list_lock: Arc<RwLock<ServerList>>) -> Result<(), Error> {
         match server_list_lock.read().get_default() {
             Ok(server) => {
-                println!("You are on {}", server);
-                println!("TODO: have the server store the current login info");
+                println!("You are {}", server.user_string());
             },
             Err(_) => {
                 // You DEFINITELY have none; it can't be outta bounds, right?!

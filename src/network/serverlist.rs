@@ -108,7 +108,6 @@ impl ServerList {
         Ok(())
     }
 
-    // NOTE: maybe return the selected server?
     pub fn set_server(&mut self, idx: usize) -> Result<&Server, Error> {
         if self.servers.is_empty() {
             Err(SelectedServerError::NoServers)?

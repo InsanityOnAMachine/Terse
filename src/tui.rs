@@ -1,8 +1,6 @@
 pub mod app;
 pub use app::*;
 
-pub mod selectable;
-pub use selectable::*;
 
 pub mod label;
 pub use label::*;

@@ -35,9 +35,7 @@ impl Component for PostScroller {
         Ok(())
     }
 
-    // TODO: something with Margin? see
     // https://ratatui.rs/examples/widgets/scrollbar/
-    // TODO: PostScroller by itself! Organize!
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 
         let block = tui::get_default_block();

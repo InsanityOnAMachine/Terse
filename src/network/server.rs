@@ -36,6 +36,7 @@ impl Server {
         self.login_info.is_some()
     }
 
+    /// Returns a string of the form "Bill on terseapp.com"
     pub fn user_string(&self) -> String {
         return format!(
             "{} on {}",
