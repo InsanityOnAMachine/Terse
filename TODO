@@ -1,0 +1,19 @@
+- This and Terse-Server should ideally be both updated at the same time, but 2 separate repos makes this a bit difficult.
+    - I want the versioning system to be all 'if the first numbers are the same, they'll work together ok'
+	- I.E. 
+	    - patch versions are internal and minor, like li'l bug fixes,
+	    - minor versions are internal and non-minor, like getting a new search algorithm or email system,
+	    - major versions update the interface between the two, and they will not work together
+	- this means there should be a non-changing interface to get the version from the other so's you can tell if you're compatible.
+
+- How should you install Terse?
+    - Unaware of how to get it on Homebrew plus it's probably not ready; I could have you build it from source (which currently requires nightly rust)
+    - An installer script could be done but where would it put the binary? Homebrew has predefined places already in PATH for that.
+	- Plus Terse can already handle the teensy bit of creating-storate-file-if-nonexistant.
+	- Though it is important that upon removing Terse the XDG folder is deleted.
+
+- How should the contributing workflow go?
+    - For minor versions, if I go with the versioning system above, you'd only need to download one of the repos. Actually, no. For testing you should have a localhosted server so you need both repos for any case, even if you aren't modifying both.
+    - For releases that change how the two interact (and really any change at all, just to make sure the interface ain't broke), I'd need to auto-test via CI/CD a little client and server through a whole round of testing.
+    - Especially so for PRs on major versions, the PRs would have to reference each other across sites ([tangled](https://tangled.sh) and Github), and be merged / tested at the same time...
+	- Very literally, you'd have to test one (unknown 'till the PRs exist) branch of one random repo against another of another repo. That is multi-project/repo CI/CD.
