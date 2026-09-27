@@ -63,8 +63,7 @@ pub trait Component {
     fn get_labels(&self) -> Vec<String> {vec![]}
     fn select(&mut self) {}
     fn deselect(&mut self) {}
-    // TODO: this statement of get len and add 2 is not DRY.
-    fn get_min_size(&self) -> MinSize {return MinSize::new((super::Label::join(self.get_labels()).len() + 2) as u16,1)}
+    fn get_min_size(&self) -> MinSize {return MinSize::new(super::Label::join(self.get_labels()).len() as u16,1)}
 }
 
 impl<T> Component for Option<T> where T: Component {

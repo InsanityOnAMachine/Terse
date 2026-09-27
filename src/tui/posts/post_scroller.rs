@@ -5,20 +5,23 @@ use crate::posts::Post;
 
 use anyhow::Error;
 
-pub struct PostWidget {
+/// The PostScroller component is basically the most basic Post Viewer possible
+/// that is wrapped by other classes to give it additional usability.
+/// It scrolls a post. That's it.
+pub struct PostScroller {
     post: Post,
     height: usize,
     scroll_state: ScrollbarState,
 }
 
-impl PostWidget {
+impl PostScroller {
     pub fn new(post: Post) -> Self {
         let height = post.content.clone().lines().count();
         Self {post, height, scroll_state: ScrollbarState::new(height).content_length(height)}
     }
 }
 
-impl Component for PostWidget {
+impl Component for PostScroller {
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<(), Error> {
         match key.code {
             KeyCode::Char('j') => {self.scroll_state.next()}
@@ -30,7 +33,7 @@ impl Component for PostWidget {
 
     // TODO: something with Margin? see
     // https://ratatui.rs/examples/widgets/scrollbar/
-    // TODO: PostWidget by itself! Organize!
+    // TODO: PostScroller by itself! Organize!
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
 
         let block = tui::get_default_block();
@@ -65,7 +68,7 @@ impl Component for PostWidget {
         ]
     }
     fn deselect(&mut self) {
-        // This is necessary for continuity; when we enter into a PostWidget in the search menu, we
+        // This is necessary for continuity; when we enter into a PostScroller in the search menu, we
         // erase the preview and make a new one, so the preview must reset to 0 when not selected.
         self.scroll_state.first();
     }

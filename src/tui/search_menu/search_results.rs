@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
-use crate::tui::{self, Label, Component, PostWidget};
+use crate::tui::{self, Label, Component, PostReader};
 use crate::network::{ServerList, SearchResult};
 use crate::posts::Post;
 
@@ -95,20 +95,20 @@ impl Component for SearchResults {
         ]
     }
     fn get_min_size(&self) -> tui::MinSize {
-        tui::MinSize::new((Label::join(self.get_labels()).len() + 2) as u16, 5)
+        tui::MinSize::new(Label::join(self.get_labels()).len() as u16, 5)
     }
 }
 
 
 pub struct SearchResultsMenu {
     search_results: SearchResults,
-    post_widget: Option<PostWidget>,
+    post_reader: Option<PostReader>,
     mode: SearchResultsMenuMode,
 }
 
 impl SearchResultsMenu {
     pub fn new(search_results: SearchResults) -> Self {
-        Self {search_results, post_widget: None, mode: SearchResultsMenuMode::Results}
+        Self {search_results, post_reader: None, mode: SearchResultsMenuMode::Results}
     }
 }
 
@@ -124,17 +124,17 @@ impl Component for SearchResultsMenu {
                 match self.search_results.handle_key_event(key)? {
                     SearchResultsAction::Moved => {
                         if self.search_results.has_selected_article() {
-                            self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()))
+                            self.post_reader = Some(PostReader::new(self.search_results.get_selected_article()))
                         } else {
-                            self.post_widget = None
+                            self.post_reader = None
                         }
                     },
                     SearchResultsAction::Selected => {
                         // This means that even if we are showing the preview, we make a new post
-                        // widget anyway. Also means that on deselect for the PostWidget we need to
+                        // widget anyway. Also means that on deselect for the PostReader we need to
                         // wind it back up to the top so there's no jump as the new one always
                         // starts out at 0 scroll
-                        self.post_widget = Some(PostWidget::new(self.search_results.get_selected_article()));
+                        self.post_reader = Some(PostReader::new(self.search_results.get_selected_article()));
                         self.mode = SearchResultsMenuMode::Post;
                     },
                     _ => {}
@@ -144,9 +144,9 @@ impl Component for SearchResultsMenu {
                 match key.code {
                     KeyCode::Char('b') => {
                         self.mode = SearchResultsMenuMode::Results;
-                        self.post_widget.deselect();
+                        self.post_reader.deselect();
                     }
-                    _ => _ = self.post_widget.handle_key_event(key)?
+                    _ => _ = self.post_reader.handle_key_event(key)?
                 }
             }
         }
@@ -165,20 +165,20 @@ impl Component for SearchResultsMenu {
         match self.mode {
             SearchResultsMenuMode::Results => {
                 self.search_results.render_with_help(left, buf);
-                self.post_widget.render_greyed_out(right, buf, "");
+                self.post_reader.render_greyed_out(right, buf, "");
             }
             SearchResultsMenuMode::Post => {
                 self.search_results.render_greyed_out(left, buf, if selected {"b"} else {""});
-                self.post_widget.render_with_help(right, buf) 
+                self.post_reader.render_with_help(right, buf) 
             }
         }
     }
 
     fn deselect(&mut self) {
         self.mode = SearchResultsMenuMode::Results;
-        self.post_widget.deselect();
+        self.post_reader.deselect();
     }
     fn get_min_size(&self) -> tui::MinSize {
-        tui::MinSize::hmerge(vec![self.search_results.get_min_size(), self.post_widget.get_min_size()])
+        tui::MinSize::hmerge(vec![self.search_results.get_min_size(), self.post_reader.get_min_size()])
     }
 }

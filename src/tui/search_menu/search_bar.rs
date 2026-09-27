@@ -51,6 +51,6 @@ impl Component for SearchBar {
         ]
     }
     fn get_min_size(&self) -> tui::MinSize {
-        tui::MinSize::new((Label::join(self.get_labels()).len() + 2) as u16, 3)
+        tui::MinSize::new(Label::join(self.get_labels()).len() as u16, 3)
     }
 }

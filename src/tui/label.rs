@@ -5,6 +5,6 @@ impl Label {
         String::from(" ") + key.as_ref() + ": " + action.as_ref() + " "
     }
     pub fn join(labels: Vec<String>) -> String {
-        labels.join(" - ")
+        String::from(" ") + labels.join(" - ").as_ref() + " "
     }
 }
