@@ -33,7 +33,7 @@ Just type in a query; <code>trs center div</code> will work, or <code>trs rust r
 Actually, before that, you'll need to-
 
 <h4>Connecting to a server</h4>
-Terse doesn't open a portal to the Web for its answers; instead, you connect to a dedicated Terse server to search on it;
+Terse doesn't open a portal to the whole Web or do a Google query for its answers; instead, you connect to a dedicated Terse server to search on it;
 <code>trs --server add https://the-url-of-a-terse-server.com</code>
 You can search on the server now! And besides that-
 
