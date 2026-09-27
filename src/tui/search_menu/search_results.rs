@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
-use crate::tui::{self, Label, Component};
+use crate::tui::{self, Label, Component, PostWidget};
 use crate::network::{ServerList, SearchResult};
-use crate::posts::{Post, PostWidget};
+use crate::posts::Post;
 
 use ratatui::widgets::{StatefulWidget, List, ListState};
 use ratatui::prelude::{Rect, Buffer, Modifier};

@@ -1,7 +1,7 @@
 use ratatui::{buffer::Buffer, layout::{Offset, Rect, Size}, style::Style, widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, StatefulWidget, Widget}};
 use crossterm::event::{KeyCode, KeyEvent};
 use crate::tui::{self, Label, Component};
-use super::Post;
+use crate::posts::Post;
 
 use anyhow::Error;
 
@@ -39,8 +39,9 @@ impl Component for PostWidget {
 
         self.scroll_state = ScrollbarState::new(self.height.saturating_sub(inner.height as usize)+1).position(std::cmp::min(self.scroll_state.get_position(), self.height.saturating_sub(inner.height as usize)));
 
-        // TODO: eliminate this clone() by any means necessary.
-        Paragraph::new(self.post.content.clone())
+        // TODO: This thing right here might not be compiler optimized... so make sure it ain't
+        // expensive re-making this as_str over and over 
+        Paragraph::new(self.post.content.as_str())
         .scroll((self.scroll_state.get_position() as u16, 0))
         .render(inner, buf);
 

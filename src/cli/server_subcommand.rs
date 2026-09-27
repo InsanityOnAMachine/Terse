@@ -25,7 +25,7 @@ impl ServerSubcommand {
 
         match self {
             Self::Add { url, stay } => {
-                server_list.add_server(url.clone(), !stay);
+                server_list.add_server(url.clone(), !stay)?;
                 println!("I successfully added {url} to the list of servers!");
             }
             Self::Remove { url } => {

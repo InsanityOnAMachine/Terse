@@ -21,6 +21,9 @@ pub use blinker::*;
 pub mod search_menu;
 pub use search_menu::*;
 
+pub mod misc;
+pub use misc::*;
+
 use ratatui::widgets::{Block, BorderType};
 use ratatui::style::Style;
 

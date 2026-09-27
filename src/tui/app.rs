@@ -45,8 +45,6 @@ impl App {
                 #[cfg(debug_assertions)]
                 self.blinker.render(bottom, frame.buffer_mut());
                 Span::from("ESC to quit").on_red().into_right_aligned_line().render(bottom, frame.buffer_mut());
-
-                Text::from(format!("{:?}", window.get_min_size())).render(bottom, frame.buffer_mut())
             })?;
 
             match event::poll(Duration::from_millis(0)) {
