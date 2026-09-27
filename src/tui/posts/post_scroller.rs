@@ -19,6 +19,10 @@ impl PostScroller {
         let height = post.content.clone().lines().count();
         Self {post, height, scroll_state: ScrollbarState::new(height).content_length(height)}
     }
+
+    pub fn get_post(&self) -> Post {
+        self.post.clone()
+    }
 }
 
 impl Component for PostScroller {
