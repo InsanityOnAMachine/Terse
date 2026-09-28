@@ -43,6 +43,7 @@ pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>,
 
     let post = Post {title: title.clone(), content: content};
 
+    // TODO: right here a no-server error needs to be printed somehow...?
     let message = server_list.publish(server_list.get_default()?, post)?;
 
     println!("{message}");
