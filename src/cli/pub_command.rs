@@ -1,6 +1,7 @@
 use parking_lot::RwLock;
 use std::sync::Arc;
-use crate::network::ServerList;
+use crate::tui::PostReviewer;
+use crate::{network::ServerList, tui::App};
 use crate::posts::Post;
 
 use std::{
@@ -42,6 +43,8 @@ pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>,
     }
 
     let post = Post {title: title.clone(), content: content};
+
+    App::default().run(&mut PostReviewer::new(post.clone()));
 
     // TODO: right here a no-server error needs to be printed somehow...?
     let message = server_list.publish(server_list.get_default()?, post)?;

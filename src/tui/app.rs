@@ -8,6 +8,8 @@ use ratatui::{
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 
+use anyhow::Error;
+
 #[cfg(debug_assertions)]
 use crate::tui::Blinker;
 
@@ -18,12 +20,17 @@ pub struct App {
     blinker: Blinker,
 }
 
+pub enum AppAction<T> {
+    Exit(T),
+    Nothing,
+}
+
 impl App {
-    pub fn run<T: Component>(&mut self, window: &mut T) -> Result<(), std::io::Error> {
+    pub fn run<A, T: Component<Action = AppAction<A>>>(&mut self, window: &mut T) -> Result<Option<A>, Error> {
         ratatui::run(|terminal| self.run_loop(terminal, window))
     }
 
-    pub fn run_loop<T: Component>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<(), std::io::Error> {
+    pub fn run_loop<A, T: Component<Action = AppAction<A>>>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<Option<A>, Error> {
         while !self.exit {
            terminal.draw(|frame| {
                 if !window.get_min_size().fits_in(frame.area()) {
@@ -40,27 +47,27 @@ impl App {
                 .areas(frame.area());
 
                 // https://stackoverflow.com/questions/30026893/how-to-use-a-map-over-vectors#30026986
-                window.render(top, frame.buffer_mut(), true);
+                window.render_with_help(top, frame.buffer_mut());
 
                 #[cfg(debug_assertions)]
                 self.blinker.render(bottom, frame.buffer_mut());
                 Span::from("ESC to quit").on_red().into_right_aligned_line().render(bottom, frame.buffer_mut());
             })?;
 
-            match event::poll(Duration::from_millis(0)) {
-                Ok(true) => {
-                    if let Event::Key(key_event) = event::read()? {
-                        if let KeyEventKind::Press | KeyEventKind::Repeat = key_event.kind {
-                            match key_event.code {
-                                KeyCode::Esc => self.exit = true,
-                                _ => _ = window.handle_key_event(key_event),
-                            }
+            if let Ok(true) = event::poll(Duration::from_millis(0)) {
+                if let Event::Key(key_event) = event::read()? {
+                    // Only way I know how to do this...
+                    if let KeyEventKind::Press | KeyEventKind::Repeat = key_event.kind {} else {continue;}
+                    match key_event.code {
+                        KeyCode::Esc => self.exit = true,
+                        _ => match window.handle_key_event(key_event)? {
+                            AppAction::Exit(e) => return Ok(Some(e)),
+                            _ => {}
                         }
                     }
                 }
-                _ => {}
             }
         }
-        Ok(())
+        Ok(None)
     }
 }
