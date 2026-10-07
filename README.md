@@ -4,6 +4,9 @@
 <sub>Terse is still in development, and nowhere near finished yet! Some of the features here don't even exist yet! <sub>
 </div>
 
+<sub>Note that this is the client side of Terse; the server's repository can be found [here](https://tangled.org/joshuaward.roomy.chat/Terse-server), and is not necessarily up-to-date with the client, as both are still in-dev, but keep an eye out!</sub>
+<br>
+
 Terse is a search engine directly in your terminal, designed to give you answers, cheatsheets, code snippets, etc., fast, easy, and bloat-free.
 
 <!-- https://dev.to/asyraf/how-to-add-dropdown-in-markdown-o78 -->
