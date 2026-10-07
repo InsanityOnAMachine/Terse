@@ -94,8 +94,11 @@ impl Component for SearchResults {
             Label::new("enter", "select"),
         ]
     }
+    fn get_title(&self) -> &str {
+        "Search Results"
+    }
     fn get_min_size(&self) -> tui::MinSize {
-        tui::MinSize::new(Label::join(self.get_labels()).len() as u16, 5)
+        tui::MinSize::new(self.get_text_fit_size() as u16, 5)
     }
 }
 
