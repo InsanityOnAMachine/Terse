@@ -85,6 +85,6 @@ impl Component for PostReader {
     }
     fn get_min_size(&self) -> crate::tui::MinSize {
         let child_size = self.post_scroller.get_min_size();
-        MinSize::new(child_size.width.max(Label::join(self.get_labels()).len() as u16), child_size.height)
+        MinSize::new(child_size.width.max(self.get_text_fit_size() as u16), child_size.height)
     }
 }

@@ -1,5 +1,5 @@
 use ratatui::widgets::Padding;
-use ratatui::layout::{Offset, Size};
+use ratatui::layout::{Layout, Offset, Size, Direction, Constraint::{Min, Length}};
 use ratatui::text::Text;
 use crate::tui::{self, MinSize};
 
@@ -38,7 +38,17 @@ pub trait Component {
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         self.render(area, buf, true);
         let key_bindings = self.get_labels().join("-");
-        Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: (area.height - 1).into()}).resize(Size::new(key_bindings.len() as u16, 1)), buf)
+        Text::from(key_bindings.as_str()).light_red().render(area.offset(Offset {x: 1, y: (area.height - 1).into()}).resize(Size::new(key_bindings.len() as u16, 1)), buf);
+        Text::from(self.get_title())
+            .red()
+            .centered()
+            .render(
+                Layout::default()
+                    .direction(Direction::Horizontal) 
+                    .constraints(vec![Min(0), Length(self.get_title().len() as u16), Min(0)])
+                    // For some reason we need to specify the # of constraints here
+                    .areas::<3>(area.resize(Size::new(area.width, 1)))[1],
+            buf);
     }
     fn render_greyed_out(&mut self, area: Rect, buf: &mut Buffer, key_binding: &(impl AsRef<str> + ?Sized)) {
         self.render(area, buf, false);
@@ -61,9 +71,12 @@ pub trait Component {
         Text::from(key_binding.as_ref()).light_red().render(area.offset(Offset {x: 1, y: 0}).resize(Size::new(key_binding.as_ref().len() as u16, 1)), buf)
     }
     fn get_labels(&self) -> Vec<String> {vec![]}
+    fn get_title(&self) -> &str {""}
+    /// Gets the min width necessary to fit all the labels / top title
+    fn get_text_fit_size(&self) -> usize {super::Label::join(self.get_labels()).len().max(self.get_title().len())}
     fn select(&mut self) {}
     fn deselect(&mut self) {}
-    fn get_min_size(&self) -> MinSize {return MinSize::new(super::Label::join(self.get_labels()).len() as u16,1)}
+    fn get_min_size(&self) -> MinSize {return MinSize::new(self.get_text_fit_size() as u16,1)}
 }
 
 impl<T> Component for Option<T> where T: Component {
