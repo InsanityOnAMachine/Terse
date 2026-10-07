@@ -44,7 +44,10 @@ pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>,
 
     let post = Post {title: title.clone(), content: content};
 
-    App::default().run(&mut PostReviewer::new(post.clone()));
+    match App::default().run(&mut PostReviewer::new(post.clone()))? {
+        None | Some(false) => {return Ok(())},
+        _ => {}
+    }
 
     // TODO: right here a no-server error needs to be printed somehow...?
     let message = server_list.publish(server_list.get_default()?, post)?;

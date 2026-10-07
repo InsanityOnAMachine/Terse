@@ -25,12 +25,19 @@ pub enum AppAction<T> {
     Nothing,
 }
 
+impl Into<AppAction<()>> for () {
+    fn into(self) -> AppAction<()> {
+        AppAction::Nothing
+    }
+}
+
 impl App {
-    pub fn run<A, T: Component<Action = AppAction<A>>>(&mut self, window: &mut T) -> Result<Option<A>, Error> {
+    // We return an Option wrapping the return type in case you exit via escaping manually
+    pub fn run<A, T: Component<Action: Into<AppAction<A>>>>(&mut self, window: &mut T) -> Result<Option<A>, Error> {
         ratatui::run(|terminal| self.run_loop(terminal, window))
     }
 
-    pub fn run_loop<A, T: Component<Action = AppAction<A>>>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<Option<A>, Error> {
+    pub fn run_loop<A, T: Component<Action: Into<AppAction<A>>>>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<Option<A>, Error> {
         while !self.exit {
            terminal.draw(|frame| {
                 if !window.get_min_size().fits_in(frame.area()) {
@@ -60,7 +67,7 @@ impl App {
                     if let KeyEventKind::Press | KeyEventKind::Repeat = key_event.kind {} else {continue;}
                     match key_event.code {
                         KeyCode::Esc => self.exit = true,
-                        _ => match window.handle_key_event(key_event)? {
+                        _ => match window.handle_key_event(key_event)?.into() {
                             AppAction::Exit(e) => return Ok(Some(e)),
                             _ => {}
                         }
