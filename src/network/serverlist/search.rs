@@ -4,13 +4,11 @@ use crate::network::Server;
 
 use crate::posts::Post;
 
-use super::ServerList;
-
-use anyhow::Error;
+use super::{ServerList, NetworkError};
 
 
 impl ServerList {
-	pub fn search(&self, server: &Server, query: String) -> Result<Vec<SearchResult>, Error> {
+	pub fn search(&self, server: &Server, query: String) -> Result<Vec<SearchResult>, NetworkError> {
         let headers = self.client.get(server.url_with_params("search", format!("query={}", query)))
             .send()?
             .json::<Vec<SearchResultHeader>>()?;
@@ -18,7 +16,7 @@ impl ServerList {
         Ok(headers.into_iter().map(|x| SearchResult::new(x, server.clone())).collect())
     }
 
-    pub fn get_post(&self, server: &Server, id: u16) -> Result<Post, Error> {
+    pub fn get_post(&self, server: &Server, id: u16) -> Result<Post, NetworkError> {
         // https://docs.rs/url/latest/url/struct.Url.html#method.parse_with_params
         Ok(
             self.client.get(server.url_with_params("posts", format!("id={id}")))

@@ -1,7 +1,0 @@
-Stats in Terse!
-
-Just run
-
-trs stats
-
-That's it! It prints out the stats of the server you're on.

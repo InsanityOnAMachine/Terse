@@ -10,6 +10,7 @@ use crate::data::DataStorageError;
 use url::Url;
 
 use anyhow::Error;
+use thiserror;
 
 // https://stackoverflow.com/questions/63369629/how-can-i-split-up-a-large-impl-over-multiple-files
 pub mod search;
@@ -21,7 +22,6 @@ pub mod publishing;
 pub use publishing::*;
 
 pub mod info;
-pub use info::*;
 
 
 #[derive(Default, Clone, Serialize, Deserialize)]
@@ -32,6 +32,33 @@ pub struct ServerList {
     client: Client,
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum NetworkError {
+    #[error("I couldn't understand what the server sent me")]
+    CantParseResponse,
+    #[error("The server sent back an unexpected status code: [{code}]")]
+    UnexpectedStatusCode{code: String},
+    #[error("There was a problem that I can't understand with the server")]
+    UnexpectedError,
+    #[error("I had an issue sending the request to the server")]
+    ErrorSendingRequest,
+    #[error("You aren't signed into this server, so you can't publish. Try using trs server login to sign into it!")]
+    NotSignedIn,
+}
+
+impl From<reqwest::Error> for NetworkError {
+    fn from(value: reqwest::Error) -> Self {
+        if value.is_decode() {
+            return NetworkError::CantParseResponse
+        } else if value.is_connect() || 
+                  value.is_upgrade() ||
+                  value.is_redirect() ||
+                  value.is_timeout() {
+            return NetworkError::ErrorSendingRequest
+        }
+        NetworkError::UnexpectedError
+    }
+}
 
 impl ServerList {
     pub fn get_mut_default(&mut self) -> Result<&mut Server, SelectedServerError> {
@@ -82,7 +109,9 @@ impl ServerList {
 
         let server = Server::new(url, None);
         
-        self.exists_and_is_a_terse_server(&server)?;
+        if !self.exists_and_is_a_terse_server(&server)? {
+            Err(Error::msg("The server isn't a Terse server"))?
+        }
 
         self.servers.push(server);
         // NOTE: maybe always hop onto the brand new server?

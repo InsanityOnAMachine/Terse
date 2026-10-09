@@ -32,9 +32,6 @@ pub enum Cli {
     #[command(name = "search", alias = "s", override_help = include_str!("docs/search.txt"))]
     Search {query: Vec<String>},
 
-    #[command(name = "stats",  override_help = include_str!("docs/stats.txt"))]
-    Stats,
-
     #[command(name = "pub",    override_help = include_str!("docs/pub.txt"))]
     #[group(required=true)]
     Pub {#[arg(short)] title: Option<String>, #[arg(short)] path: Option<PathBuf>},
@@ -74,7 +71,6 @@ impl Cli {
 
         match self {
             Cli::Search {query}    => Self::process_query(query, server_list.clone()),
-            Cli::Stats             => Self::process_stats(server_list.clone()),
             Cli::Pub {title, path} => pub_command::process(server_list.clone(), title, path),
             Cli::Server(command)   => command.process(server_list.clone()),
             Cli::Whoami            => Self::process_whoami(server_list.clone()),
@@ -97,15 +93,6 @@ impl Cli {
         let mut search_menu = SearchMenu::new(query, server_list_lock.clone());
 
         app.run(&mut search_menu)?;
-        Ok(())
-    }
-
-    fn process_stats(server_list_lock: Arc<RwLock<ServerList>>) -> Result<(), Error> {
-        let server_list = server_list_lock.read();
-
-        let stats = server_list.get_stats(server_list.get_default()?)?;
-        
-        println!("{stats}");
         Ok(())
     }
 

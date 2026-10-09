@@ -32,6 +32,12 @@ impl Display for LoginInfo {
     }
 }
 
+impl Default for LoginInfo {
+    fn default() -> Self {
+        Self {email: "email@example.com".to_string(), password: "password".to_string()}
+    }
+}
+
 impl LoginInfo {
     pub fn as_string(&self, show_password: bool) -> String {
         let mut s = String::new();

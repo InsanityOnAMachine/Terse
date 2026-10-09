@@ -7,9 +7,7 @@ use crate::posts::Post;
 use serde::Deserialize;
 use crate::network::Server;
 
-use super::ServerList;
-
-use anyhow::Error;
+use super::{ServerList, NetworkError};
 
 
 // Assuming you are logged in, and you get a valid post to send,
@@ -57,19 +55,19 @@ impl Display for PublishingResult {
 
 impl ServerList {
 
-    pub fn publish(&self, server: &Server, post: Post) -> Result<PublishingResult, Error> {
+    pub fn publish(&self, server: &Server, post: Post) -> Result<PublishingResult, NetworkError> {
         // https://docs.rs/reqwest/latest/reqwest/blocking/struct.RequestBuilder.html
         
         if !server.is_signed_in() {
-            return Err(Error::msg("You aren't signed in to this server, so you cannot publish; try using the    trs server login    command"))
+            return Err(NetworkError::NotSignedIn)
         }
 
         // https://stackoverflow.com/questions/499591/are-https-urls-encrypted
         // So I can place the login info within the query! Yippee!
         Ok(
-            self.client.post(server.url_with_params("posts", format!("user={}", serde_json::to_string(&server.login_info.clone().unwrap())?)))
+            self.client.post(server.url_with_params("posts", format!("user={}", serde_json::to_string(&server.login_info.clone().unwrap()).unwrap_or_default())))
             .header(reqwest::header::CONTENT_TYPE, "application/json")
-            .body(serde_json::to_string(&post)?)
+            .body(serde_json::to_string(&post).expect("The post should be parsable by serde"))
             .send()?
             .json::<PublishingResult>()?
         )

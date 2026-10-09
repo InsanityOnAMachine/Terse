@@ -3,7 +3,6 @@ Terse!
 Here's a list of all the commands in Terse:
 
 trs search (searching, use 'trs s' as a quick shortcut!)
-trs stats  (stats of the current server you're on)
 trs pub    (all about publishing posts to the server you're on)
 trs server (all about addin', switchin', and loggin' into servers)
 trs whoami (quick info about yourself)
