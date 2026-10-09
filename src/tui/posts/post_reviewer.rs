@@ -1,10 +1,6 @@
-use crate::tui::{App, AppAction, Component, Label, MinSize};
+use crate::tui::{AppAction, Component, Label, MinSize};
 use super::PostScroller;
 
-use ratatui::{prelude::{Text, Widget}, style::Stylize, widgets::Clear};
-use ratatui::layout::{Layout, Direction, Constraint};
-
-use arboard::Clipboard;
 use crossterm::event::KeyCode;
 
 // The PostReviewer wraps a PostScroller in the context of checking it and okaying or vetoing it to
