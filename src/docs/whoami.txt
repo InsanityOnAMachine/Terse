@@ -2,6 +2,6 @@ Whoami in Terse!
 
 Just run
 
-trs --whoami
+trs whoami
 
 and Terse will tell you who you are!

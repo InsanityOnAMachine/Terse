@@ -2,10 +2,10 @@ Listing:
 
     Terse stores a list of known servers. To see this list, run:
 
-    trs --server list
+    trs server list
 
     This will have all your passwords hidden by default, but you can run:
 
-    trs --server list -p
+    trs server list -p
 
     to print them also. Make sure nobody's behind you.

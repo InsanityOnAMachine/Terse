@@ -2,7 +2,7 @@ Adding:
 
     To add to the list of servers, run 
 
-    trs --server add https://acoolserver.com
+    trs server add https://acoolserver.com
 
     with whatever the url of the server you want to connect to is.
 
@@ -12,4 +12,4 @@ Adding:
     By default, you switch over to the new server when you add it;
     to prevent this, add an -s (for "stay") at the end:
 
-    trs --server add https://acoolserver.com -s
+    trs server add https://acoolserver.com -s

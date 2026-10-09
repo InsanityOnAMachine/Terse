@@ -2,14 +2,14 @@ Servers in Terse!
 
 Here's a list of all server commands:
 
-trs --server add    (adding servers)
-trs --server remove (forgetting servers)
-trs --server set    (switching servers)
-trs --server list   (printing servers and info)
-trs --server login  (logging into servers; necessary for publishing)
+trs server add    (adding servers)
+trs server remove (forgetting servers)
+trs server set    (switching servers)
+trs server list   (printing servers and info)
+trs server login  (logging into servers; necessary for publishing)
 
 If you want to know more about any of these commands, hammer out
 
-trs help --server list
+trs help server list
 
-for example, to learn more about the --server list command.
+for example, to learn more about the server list command.

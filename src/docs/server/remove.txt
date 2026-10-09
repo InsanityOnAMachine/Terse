@@ -2,6 +2,6 @@ Removing:
 
     To remove a server from the list, run
 
-    trs --server remove https://acoolserver.com
+    trs server remove https://acoolserver.com
 
     with the url of the server you want to forget

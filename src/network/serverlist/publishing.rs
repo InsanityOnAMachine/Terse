@@ -61,7 +61,7 @@ impl ServerList {
         // https://docs.rs/reqwest/latest/reqwest/blocking/struct.RequestBuilder.html
         
         if !server.is_signed_in() {
-            return Err(Error::msg("You aren't signed in to this server, so you cannot publish; try using the    trs --server login    command"))
+            return Err(Error::msg("You aren't signed in to this server, so you cannot publish; try using the    trs server login    command"))
         }
 
         // https://stackoverflow.com/questions/499591/are-https-urls-encrypted

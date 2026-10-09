@@ -1,6 +1,7 @@
 #![feature(associated_type_defaults)]
 
 pub mod cli;
+use clap::Parser;
 use cli::Cli;
 
 pub mod tui;
@@ -9,7 +10,7 @@ pub mod posts;
 pub mod data;
 
 fn main() {
-    let cli = Cli::from_args();
+    let cli = Cli::parse();
     match cli.process() {
         Err(e) => eprintln!("{e}"),
         _ => {}

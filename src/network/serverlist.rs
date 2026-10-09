@@ -147,7 +147,7 @@ impl std::fmt::Display for ServerList {
 
 #[derive(thiserror::Error, Debug)]
 pub enum SelectedServerError {
-    #[error("You don't have any servers; add one with `trs --server add https://url-to-a-terse-server`")]
+    #[error("You don't have any servers; add one with `trs server add https://url-to-a-terse-server`")]
     NoServers,
     // max should be servers.len() - 1; the max index available
     #[error("You don't have a server with index {idx}; try an index from 0-{max}")]
@@ -163,6 +163,6 @@ pub enum AddServerError {
 
 #[derive(thiserror::Error, Debug)]
 pub enum RemoveServerError {
-    #[error("I couldn't find the server you wanted to remove in the list;\nTry running --server list to see all the servers you have")]
+    #[error("I couldn't find the server you wanted to remove in the list;\nTry running server list to see all the servers you have")]
     ServerNotInList
 }

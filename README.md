@@ -39,14 +39,14 @@ Actually, before that, you'll need to-
 
 <h4>Connecting to a server</h4>
 Terse doesn't open a portal to the whole Web or do a Google query for its answers; instead, you connect to a dedicated Terse server to search on it;
-<code>trs --server add https://the-url-of-a-terse-server.com</code>
+<code>trs server add https://the-url-of-a-terse-server.com</code>
 You can search on the server now! 
 
 Note that this architecture has at least one advantage over other common cheat-sheet systems such as the (amazing) [cht.sh](https://cht.sh), [tldr](https://tldr.sh), or basic man pages, in that the backend is moddable; I.E. a Terse server be a wrapper for these sources of cheat sheets, but these cheat sheets cannot wrap Terse.
 
 <h4>Publishing</h4>
 Some servers (hopefully) in the future will allow you to publish to them;
-<code>trs --pub -t "Format String Cheatsheet - All Languages" -p docs/format-strings.txt</code>, for example.
+<code>trs pub -t "Format String Cheatsheet - All Languages" -p docs/format-strings.txt</code>, for example.
 This way you can access answers written by devs like you who had the same problem as you, and besides answers-
 
 <h4>Code Snippets</h4>

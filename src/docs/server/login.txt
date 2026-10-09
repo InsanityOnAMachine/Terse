@@ -2,12 +2,12 @@ Login:
 
     To log into the server you're on, run
 
-    trs --server login email@email.com password123
+    trs server login email@email.com password123
     
     with whatever your email and password is.
 
-    If the server hasn't seen the email before, it creates
-    a new user and sends a verification code to your email.
+    If the server hasn't seen the email before, 
+    it sends a verification code to your email.
     It'll ask you to enter it in, and a new user will
     be created with the email and password you provided.
 

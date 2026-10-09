@@ -2,7 +2,7 @@ Switching:
 
     To switch what server you're on, run
 
-    trs --server set 5
+    trs server set 5
 
     with whatever the number of the server is;
-    you can run trs --server list to see the numbers
+    you can run trs server list to see the numbers

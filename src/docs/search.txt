@@ -1,15 +1,16 @@
 Searching in Terse
 
-trs --search 
+trs search 
 
     This searches the current server for the query you provide.
-    (So you must be on a server, though you don't hafta be signed in!)
+    (So you must be on a server, though you don't have to be signed in!)
+    For example:
+
+    trs search rust result option map functions
     
     Since this is what you'll use the most, it has a shortcut.
     Just type in 
 
-    trs center div
+    trs s center div
 
-    to search how to center a div, for example; as long as the first
-    word isn't 'help', it'll --search by default.
-    
+    to search how to center a div, for example;    
