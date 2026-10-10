@@ -33,7 +33,7 @@ pub trait Component {
     type Action = ();
     /// Processes a single key event, returning a Result<Self::Action, anyhow::Error>
     fn handle_key_event(&mut self, key: KeyEvent) -> Result<Self::Action, Error>;
-    //fn update(&mut self) -> Result<(), Error> {Ok(())}
+    fn handle_paste(&mut self, _content: String) -> Result<(), Error> {Ok(())}
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool);
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         self.render(area, buf, true);
@@ -104,6 +104,13 @@ impl<T> Component for Option<T> where T: Component {
         }
     }
 
+    fn handle_paste(&mut self, content: String) -> Result<(), Error> {
+        match self {
+            Some(x) => Ok(x.handle_paste(content)?),
+            _ => Ok(())
+        }
+    }
+
     fn render_with_help(&mut self, area: Rect, buf: &mut Buffer) {
         match self {
             Some(window) => {window.render_with_help(area, buf)},
@@ -160,6 +167,13 @@ impl<T> Component for Result<T, anyhow::Error> where T: Component {
         match self {
             Ok(x) => Some(x.handle_key_event(key)).transpose(),
             _ => Ok(None)
+        }
+    }
+
+    fn handle_paste(&mut self, content: String) -> Result<(), Error> {
+        match self {
+            Ok(x) => Ok(x.handle_paste(content)?),
+            _ => Ok(())
         }
     }
 

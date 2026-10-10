@@ -7,6 +7,8 @@ use crate::tui::Component;
 
 use super::{SearchBar, SearchServerSelector};
 
+use anyhow::Error;
+
 pub struct SearchBarMenu {
     search_bar: SearchBar,
     server_selector: SearchServerSelector,
@@ -78,6 +80,13 @@ impl Component for SearchBarMenu {
             }
         }	
         Ok(SearchBarMenuAction::Nothin)
+    }
+
+    fn handle_paste(&mut self, content: String) -> Result<(), Error> {
+        if let SearchBarMenuMode::Search = self.mode {
+            self.search_bar.handle_paste(content)?
+        }
+        Ok(())
     }
 
     fn deselect(&mut self) {

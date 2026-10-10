@@ -1,4 +1,5 @@
 use std::time::Duration;
+use std::io::stdout;
 use crate::tui::Component;
 
 use ratatui::{
@@ -34,7 +35,12 @@ impl Into<AppAction<()>> for () {
 impl App {
     // We return an Option wrapping the return type in case you exit via escaping manually
     pub fn run<A, T: Component<Action: Into<AppAction<A>>>>(&mut self, window: &mut T) -> Result<Option<A>, Error> {
-        ratatui::run(|terminal| self.run_loop(terminal, window))
+        // These things are needed so that pasting sends a Paste event, and not a bunch of Key
+        // events
+        crossterm::execute!(stdout(), crossterm::event::EnableBracketedPaste)?;
+        ratatui::run(|terminal| self.run_loop(terminal, window))?;
+        crossterm::execute!(stdout(), crossterm::event::DisableBracketedPaste)?;
+        Ok(None)
     }
 
     pub fn run_loop<A, T: Component<Action: Into<AppAction<A>>>>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<Option<A>, Error> {
@@ -62,16 +68,22 @@ impl App {
             })?;
 
             if let Ok(true) = event::poll(Duration::from_millis(0)) {
-                if let Event::Key(key_event) = event::read()? {
-                    // Only way I know how to do this...
-                    if let KeyEventKind::Press | KeyEventKind::Repeat = key_event.kind {} else {continue;}
-                    match key_event.code {
-                        KeyCode::Esc => self.exit = true,
-                        _ => match window.handle_key_event(key_event)?.into() {
-                            AppAction::Exit(e) => return Ok(Some(e)),
-                            _ => {}
+                match event::read()? {
+                    Event::Key(key_event) => {
+                        // Only way I know how to do this...
+                        if let KeyEventKind::Press | KeyEventKind::Repeat = key_event.kind {} else {continue;}
+                        match key_event.code {
+                            KeyCode::Esc => self.exit = true,
+                            _ => match window.handle_key_event(key_event)?.into() {
+                                AppAction::Exit(e) => return Ok(Some(e)),
+                                _ => {}
+                            }
                         }
                     }
+                    Event::Paste(content) => {
+                        window.handle_paste(content)?
+                    }
+                    _ => {}
                 }
             }
         }

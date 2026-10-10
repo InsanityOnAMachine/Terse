@@ -92,6 +92,13 @@ impl Component for SearchMenu {
         Ok(())
     }
 
+    fn handle_paste(&mut self, content: String) -> Result<(), Error> {
+        if let SearchMenuMode::Search = self.mode {
+            self.search_menu.handle_paste(content)?
+        }
+        Ok(())
+    }
+
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {
         let [top, bottom] = Layout::default()
             .direction(Direction::Vertical)

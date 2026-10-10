@@ -38,6 +38,11 @@ impl Component for SearchBar {
         Ok(None)
     }
 
+    fn handle_paste(&mut self, content: String) -> Result<(), Error> {
+        self.text.push_str(content.as_ref());
+        Ok(())
+    }
+
     fn render(&mut self, area: Rect, buf: &mut Buffer, _selected: bool) {
         let block = tui::get_default_block();
         let inner = block.inner(area);
