@@ -57,7 +57,13 @@ You can publish anything to Terse! Terse supports easy downloading / copying of 
 
 <div>
 
-<hr>
+<h3>Installation</h3>
+
+For now you'll have to build from source, and it doooooes need that you're using nightly Rust to compile (no worries!). Make sure it's in `--release` mode or you'll have a big flashing red bar in the TUI and an even bigger executable size. Once there the built-in help (`trs help`) should help you out;
+
+The main server is hosted at theterseverse.alwaysdata.net; you can connect to it via `trs server add https://theterseverse.alwaysdata.net` and then search on it, or login to publish posts! Apart from that you cooooould host your own Terse server via the server repo (link at the top of the README) ;)
+
+<br>
 
 <sub>No part of Terse or Terse-server was written, designed, or influenced in any way by AI, except in spite. Terse is 100% human-made</sub>
 
