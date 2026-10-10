@@ -31,7 +31,11 @@ impl Component for SearchBar {
                 let _ = self.text.pop();
             }
             KeyCode::Enter => {
-                if !self.text.is_empty() {return Ok(Some(self.text.clone()))}
+                if !self.text.is_empty() {
+                    // https://stackoverflow.com/questions/71864137/whats-the-ideal-way-to-trim-extra-spaces-from-a-string
+                    let text = self.text.clone();
+                    let words: Vec<_> = text.split_whitespace().collect();
+                    return Ok(Some(words.join(" ")))}
             }
             _ => {}
         }

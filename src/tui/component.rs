@@ -8,6 +8,7 @@ use ratatui::widgets::{Paragraph};
 use ratatui::style::{Color, Style, Stylize};
 use crossterm::event::KeyEvent;
 
+use std::fmt::Display;
 use anyhow::Error;
 
 // TODO: rename all the 'window' vars to 'cmpnt' or something
@@ -144,7 +145,7 @@ impl<T> Component for Option<T> where T: Component {
     }
 }
 
-impl<T> Component for Result<T, anyhow::Error> where T: Component {
+impl<T, E> Component for Result<T, E> where T: Component, E: Display {
     type Action = Option<T::Action>;
 
     fn render(&mut self, area: Rect, buf: &mut Buffer, selected: bool) {

@@ -4,14 +4,13 @@ use ratatui::layout::{ Layout, Direction, Constraint };
 use std::sync::Arc;
 use parking_lot::RwLock;
 use crate::tui::{self, Label, Component, PostReader};
-use crate::network::{ServerList, SearchResult};
+use crate::network::{NetworkError, SearchResult, ServerList};
 use crate::posts::Post;
 
 use ratatui::widgets::{StatefulWidget, List, ListState};
 use ratatui::prelude::{Rect, Buffer, Modifier};
 
 use crossterm::event::{KeyCode, KeyEvent};
-
 
 pub struct SearchResults {
     links: Vec<SearchResult>,
@@ -30,15 +29,33 @@ impl SearchResults{
         Self { links, list_state, post_cache, server_list}
     }
 
-    pub fn get_selected_article(&mut self) -> Post {
+    /// Attempts to get a Post from the selected SearchResult
+    ///
+    /// If there are no results or for some reason none are selected, it returns Ok(None)
+    /// If there is a network error trying to get the post, it returns Err(NetworkError)
+    /// If everything goes well, you'll get an Ok(Post)
+    ///
+    pub fn get_selected_article(&mut self) -> Result<Option<Post>, NetworkError> {
         // https://stackoverflow.com/questions/37890405/is-there-a-way-to-simplify-converting-an-option-into-a-result-without-a-macro
-        let search_result = self.links.get(self.list_state.selected().unwrap_or(0).min(self.links.len()-1)).unwrap();
+        let selected_opt = self.list_state.selected();
+        let selected = match selected_opt {
+            Some(x) => x,
+            None => return Ok(None)
+        };
+
+        let search_result_opt = self.links.get(selected.min(self.links.len()-1));
+
+        let search_result = match search_result_opt {
+            Some(x) => x,
+            None => return Ok(None)
+        };
+
         if !self.post_cache.contains_key(search_result) {
             let server_list = self.server_list.read();
-            let post = server_list.get_post(&search_result.server, search_result.header.postid).unwrap();
+            let post = server_list.get_post(&search_result.server, search_result.header.postid)?;
             self.post_cache.insert(search_result.clone(), post);
         }
-        return self.post_cache.get(search_result).unwrap().clone()
+        return Ok(Some(self.post_cache.get(search_result).unwrap().clone()))
     }
 
     pub fn has_selected_article(&self) -> bool {
@@ -105,13 +122,13 @@ impl Component for SearchResults {
 
 pub struct SearchResultsMenu {
     search_results: SearchResults,
-    post_reader: Option<PostReader>,
+    post_reader: Result<Option<PostReader>, NetworkError>,
     mode: SearchResultsMenuMode,
 }
 
 impl SearchResultsMenu {
     pub fn new(search_results: SearchResults) -> Self {
-        Self {search_results, post_reader: None, mode: SearchResultsMenuMode::Results}
+        Self {search_results, post_reader: Ok(None), mode: SearchResultsMenuMode::Results}
     }
 }
 
@@ -127,9 +144,11 @@ impl Component for SearchResultsMenu {
                 match self.search_results.handle_key_event(key)? {
                     SearchResultsAction::Moved => {
                         if self.search_results.has_selected_article() {
-                            self.post_reader = Some(PostReader::new(self.search_results.get_selected_article()))
+                            self.post_reader = self.search_results
+                                .get_selected_article()
+                                .map(|x| x.map(|y| PostReader::new(y)))
                         } else {
-                            self.post_reader = None
+                            self.post_reader = Ok(None)
                         }
                     },
                     SearchResultsAction::Selected => {
@@ -137,7 +156,7 @@ impl Component for SearchResultsMenu {
                         // widget anyway. Also means that on deselect for the PostReader we need to
                         // wind it back up to the top so there's no jump as the new one always
                         // starts out at 0 scroll
-                        self.post_reader = Some(PostReader::new(self.search_results.get_selected_article()));
+                        self.post_reader = self.search_results.get_selected_article().map(|x| x.map(|y| PostReader::new(y)));
                         self.mode = SearchResultsMenuMode::Post;
                     },
                     _ => {}
