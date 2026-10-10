@@ -16,7 +16,7 @@ use capitalize::Capitalize;
 
 use anyhow::Error;
 
-
+// TODO: PublishingError
 pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>, path: Option<PathBuf>) -> Result<(), Error> {
     let server_list = server_list_lock.read();
     if !server_list.get_default()?.is_signed_in() {
@@ -34,22 +34,23 @@ pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>,
         )
     };
     
-    let content = match path {
+    let content = match &path {
         Some(path) => std::fs::read_to_string(&path)
         .or(Err(Error::msg("I couldn't read the path you gave me")))?,
-        None => get_editor_input()?,
+        None => get_editor_input(None)?,
     };
 
-    if cfg!(debug_assertions) {
-        println!("Title: {title}");
-        println!("Content: \n{content}")
-    }
+    let mut post = Post {title: title.clone(), content: content};
 
-    let post = Post {title: title.clone(), content: content};
-
-    match App::default().run(&mut PostReviewer::new(post.clone()))? {
-        None | Some(false) => {return Ok(())},
-        _ => {}
+    loop {
+        match App::default().run(&mut PostReviewer::new(post.clone()))? {
+            None => {return Ok(())},
+            Some(false) => {
+                let content = get_editor_input(path.clone().or(Some(get_temp_post_path()?)))?;
+                post.content = content;
+            }
+            Some(true) => {break}
+        }
     }
 
     // TODO: right here a no-server error needs to be printed somehow...?
@@ -68,16 +69,28 @@ fn format_title(title: String) -> String {
     .join(" ")
 }
 
+fn get_temp_post_path() -> Result<PathBuf, Error> {
+    let mut file_path = temp_dir();
+    file_path.push("terse-post");
+    return Ok(file_path);
+}
+
 // https://stackoverflow.com/questions/56011927/how-do-i-use-rust-to-open-the-users-default-editor-and-get-the-edited-content
-fn get_editor_input() -> Result<String, Error> {
+/// If path is null, an empty temp file is created.
+fn get_editor_input(path: Option<PathBuf>) -> Result<String, Error> {
     let editor = match var("EDITOR") {
         Ok(v) => v,
         Err(_) => String::from("vim")
     };
     
-    let mut file_path = temp_dir();
-    file_path.push("terse-post");
-    File::create(&file_path).or(Err(Error::msg("I couldn't create a temporary file to store your post in")))?;
+    let file_path = match path {
+        Some(p) => p,
+        None => {
+            let p = get_temp_post_path()?;
+            File::create(&p).or(Err(Error::msg("I couldn't create a temporary file to store your post in")))?;
+            p
+        }
+    };
 
     Command::new(&editor)
         .arg(&file_path)

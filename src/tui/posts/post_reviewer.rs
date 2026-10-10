@@ -36,7 +36,7 @@ impl Component for PostReviewer {
             KeyCode::Char('a') => {
                 return Ok(Some(true))
             }
-            KeyCode::Char('r') => {
+            KeyCode::Char('e') => {
                 return Ok(Some(false))
             }
             _ => self.post_scroller.handle_key_event(key)?
@@ -47,7 +47,7 @@ impl Component for PostReviewer {
         let mut labels = self.post_scroller.get_labels();
         labels.append(&mut vec![
             Label::new("a", "approve"),
-            Label::new("r", "reject"),
+            Label::new("e", "edit"),
         ]);
         labels
     }

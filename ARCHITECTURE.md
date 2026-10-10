@@ -26,7 +26,7 @@ Ratatui uses an immediate rendering system. I don't like that, so Component is y
 
 pretty much. 
 
-It can store subcomponents and tell those to render when it's told to render, very modular. It also returns a Action type (custom to each impl of Component) that the parent Component can use to do things. Plus it has some workings with Labels and all so the parent can call pre-defined functions in it that wrap render() to overlay help messages / key shortcuts.
+It can store subcomponents and tell those to render when it's told to render, cascade key events downwards, etc; very modular. It also returns a Action type (custom to each impl of Component) that the parent Component can use to do things. Plus it has some workings with Labels and all so the parent can call pre-defined functions in it that wrap render() to overlay help messages / key shortcuts.
 This is the main reason for the Arc<RwLock<ServerList>> stuff; Components often need a reference to the ServerList, so they gotta store it without having to deal with all those mean old lifetimes getting in the way. This makes the developer experience much better.
 
 

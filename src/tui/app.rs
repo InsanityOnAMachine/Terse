@@ -38,9 +38,9 @@ impl App {
         // These things are needed so that pasting sends a Paste event, and not a bunch of Key
         // events
         crossterm::execute!(stdout(), crossterm::event::EnableBracketedPaste)?;
-        ratatui::run(|terminal| self.run_loop(terminal, window))?;
+        let result = ratatui::run(|terminal| self.run_loop(terminal, window));
         crossterm::execute!(stdout(), crossterm::event::DisableBracketedPaste)?;
-        Ok(None)
+        result
     }
 
     pub fn run_loop<A, T: Component<Action: Into<AppAction<A>>>>(&mut self, terminal: &mut DefaultTerminal, window: &mut T) -> Result<Option<A>, Error> {
