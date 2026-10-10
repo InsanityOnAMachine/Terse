@@ -19,6 +19,9 @@ use anyhow::Error;
 
 pub fn process(server_list_lock: Arc<RwLock<ServerList>>, title: Option<String>, path: Option<PathBuf>) -> Result<(), Error> {
     let server_list = server_list_lock.read();
+    if !server_list.get_default()?.is_signed_in() {
+        Err(Error::msg(format!("You are not signed in to {}!", server_list.get_default()?.url_string())))?
+    }
 
     let title = match title {
         Some(s) => s,

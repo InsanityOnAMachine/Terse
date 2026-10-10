@@ -44,21 +44,10 @@ impl ServerSubcommand {
             Self::Login { email, password } => {
                 let login_info = LoginInfo::new(email, password);
 
-                // THIS IS NOT TRUE
-                // So we ask to sign in with this info;
-                // And if the user is already verified and the password matches,
-                // We're let in.
-                // Otherwise the server creates the login info and asks us for the code.
-
-                // THIS IS CURRENTLY TRUE
-                // We ask to 'create an login info on the server'
-                // I.e. "Server, trust that I own this email address!"
-                // Well, the server don't trust us, it says, 'prove it!'
-                // It sends us a code, and we use it as our login info passcode,
-                // doing a quick check first to the server to ask, 'hey, did we do it right?'
-                // and so on.
+                // We ask the server if we can login with this info
 
                 match server_list.request_login(server_list.get_default()?, &login_info)? {
+                    // 'This is a new email, so give me the code I sent to your email'
                     LoginOption::PleaseVerify => {
                         println!("The server hasn't seen that email before, so you'll need to verify it.");
                         println!("It should have sent a code to your inbox; please enter it here:");
@@ -69,14 +58,17 @@ impl ServerSubcommand {
                             return Ok(())
                         }
                     },
+                    // 'Wrong password!'
                     LoginOption::BadPassword => {
                         println!("The server said that you have the wrong password for {}", &login_info.email)
                     }
-                    _ => {}
+                    // 'all OK!'
+                    LoginOption::Success => {
+                        server_list.get_mut_default()?.set_login_info(login_info.clone());
+                        println!("I successfully signed you into {} as {}", server_list.get_default()?, &login_info.email);
+                    }
                 }
 
-                server_list.get_mut_default()?.set_login_info(login_info.clone());
-                println!("I successfully signed you into {} as {}", server_list.get_default()?, &login_info.email);
             }
         }
         Ok(())
