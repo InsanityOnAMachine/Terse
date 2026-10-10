@@ -1,4 +1,4 @@
-use ratatui::{buffer::Buffer, layout::{Offset, Rect, Size}, style::Style, widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, StatefulWidget, Widget}};
+use ratatui::{buffer::Buffer, layout::{Offset, Rect, Size}, style::Style, widgets::{Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState, StatefulWidget, Widget, Wrap}};
 use crossterm::event::{KeyCode, KeyEvent};
 use crate::tui::{self, Label, Component};
 use crate::posts::Post;
@@ -48,6 +48,7 @@ impl Component for PostScroller {
         // expensive re-making this as_str over and over 
         Paragraph::new(self.post.content.as_str())
         .scroll((self.scroll_state.get_position() as u16, 0))
+        .wrap(Wrap { trim: false })
         .render(inner, buf);
 
         if !selected {return}
