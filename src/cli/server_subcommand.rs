@@ -52,7 +52,6 @@ impl ServerSubcommand {
                         println!("The server hasn't seen that email before, so you'll need to verify it.");
                         println!("It should have sent a code to your inbox; please enter it here:");
                         let code: String = read!("{}\n");
-
                         if !server_list.verify_user(server_list.get_default()?, &login_info, &code)? {
                             println!("The code was incorrect, please try again.");
                             return Ok(())
@@ -60,15 +59,14 @@ impl ServerSubcommand {
                     },
                     // 'Wrong password!'
                     LoginOption::BadPassword => {
-                        println!("The server said that you have the wrong password for {}", &login_info.email)
+                        println!("The server said that you have the wrong password for {}", &login_info.email);
+                        return Ok(())
                     }
-                    // 'all OK!'
-                    LoginOption::Success => {
-                        server_list.get_mut_default()?.set_login_info(login_info.clone());
-                        println!("I successfully signed you into {} as {}", server_list.get_default()?, &login_info.email);
-                    }
+                    _ => {}
                 }
-
+                // 'all OK!'
+                server_list.get_mut_default()?.set_login_info(login_info.clone());
+                println!("I successfully signed you into {} as {}", server_list.get_default()?.url_string(), &login_info.email);
             }
         }
         Ok(())
