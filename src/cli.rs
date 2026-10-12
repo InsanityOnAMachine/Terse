@@ -36,8 +36,8 @@ pub enum Cli {
     #[group(required=true)]
     Pub {#[arg(short)] title: Option<String>, #[arg(short)] path: Option<PathBuf>},
 
-    #[command(subcommand, name = "server", override_help = include_str!("docs/server/main.txt"))]
-    Server(ServerSubcommand),
+    #[command(name = "server", override_help = include_str!("docs/server/main.txt"))]
+    Server(ServerSubcommandHolder),
 
     #[command(name = "whoami", override_help = include_str!("docs/whoami.txt"))]
     Whoami,

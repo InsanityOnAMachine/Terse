@@ -1,8 +1,30 @@
 use super::*;
 use text_io::read;
 
+use clap::Parser;
+
 use crate::network::LoginOption;
 use crate::network::ServerList;
+
+use crate::tui::{App, ServerMenu};
+
+// https://stackoverflow.com/questions/71991935/how-to-make-a-default-subcommand-with-clap-and-derive
+// We need this so that the whole subcommand can be optional
+#[derive(Parser)]
+pub struct ServerSubcommandHolder {
+    #[command(subcommand)]
+    command: Option<ServerSubcommand>,
+}
+
+impl ServerSubcommandHolder {
+    pub fn process(self, server_list_lock: Arc<RwLock<ServerList>>) -> Result<(), Error> {
+       match self.command {
+            Some(command) => command.process(server_list_lock),
+            // Figuring out that I needed this 'and' was actually the first useful use of Terse. Documented here.
+            None => App::default().run(&mut ServerMenu::new(server_list_lock)).and(Ok(())),
+        }
+    }
+}
 
 #[derive(Subcommand)]
 pub enum ServerSubcommand {

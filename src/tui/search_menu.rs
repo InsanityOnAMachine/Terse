@@ -41,7 +41,8 @@ pub struct SearchMenu {
 impl SearchMenu {
     pub fn new(query: String, server_list: Arc<RwLock<ServerList>>) -> Self {
         let mut menu = Self {
-            results: Err(Error::msg("WAITING AND THIS SHOULD BE A SPECIAL TYPE...")),
+            // TODO: this is a bit unidiomatic using the Err as a nothing-searched-yet fallback...
+            results: Err(Error::msg("Search for something!")),
             search_menu: SearchBarMenu::new(
                 SearchBar::new(query.clone()),
                 SearchServerSelector::new(server_list.clone()),
@@ -49,7 +50,9 @@ impl SearchMenu {
             mode: SearchMenuMode::Search,
             server_list: server_list.clone()
         };
-        menu.process_search(query, server_list.read().get_default().unwrap());
+        if !query.is_empty() {
+            menu.process_search(query, server_list.read().get_default().unwrap());
+        }
         menu
     }
 
